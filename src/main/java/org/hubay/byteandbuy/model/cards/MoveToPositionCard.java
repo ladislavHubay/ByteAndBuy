@@ -18,13 +18,7 @@ public class MoveToPositionCard implements Card {
     // Vykona presun hraca na danu poziciu na hracej doske.
     @Override
     public CardResult apply(Game game, Player player) {
-        boolean passedStart = player.moveTo(position);
-
-        if (passedStart) {
-            System.out.println("ziskal bonus za START posunutim kartou na START");
-            player.receive(game.getGameConfig().getStartBonus());
-        }
-
+        game.movePlayerTo(player, position);
         return CardResult.simple("Posun na " + description);
     }
 

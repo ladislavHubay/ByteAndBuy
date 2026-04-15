@@ -70,11 +70,25 @@ public class Game {
         return board.getTiles().size();
     }
 
-    public void movePlayer(Player player, int steps) {
+    public boolean movePlayer(Player player, int steps) {
         boolean passedStart = player.move(steps, getBoardSize());
 
         if (passedStart) {
+            System.out.println("BONUS TRIGGER - movePlayer");
             player.receive(gameConfig.getStartBonus());
         }
+
+        return passedStart;
+    }
+
+    public boolean movePlayerTo(Player player, int position) {
+        boolean passedStart = player.moveTo(position);
+
+        if (passedStart) {
+            System.out.println("BONUS TRIGGER - movePlayerTo");
+            player.receive(gameConfig.getStartBonus());
+        }
+
+        return passedStart;
     }
 }

@@ -25,17 +25,6 @@ public class CardTile extends Tile{
 
         CardResult cardResult = card.apply(game, player);
 
-        if (cardResult.getMoveSteps() != null) {
-            int steps = cardResult.getMoveSteps();
-
-            int from = player.getPosition();
-            player.move(steps, game.getBoardSize());
-
-            if (from + steps >= game.getBoardSize()) {
-                game.getBoard().getStartTile().interact(game, player);
-            }
-        }
-
         String finalMessage = drawMessage + " | " + cardResult.getMessage();
 
         return TileResult.simple(finalMessage);

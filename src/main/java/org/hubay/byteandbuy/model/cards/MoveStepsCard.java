@@ -18,13 +18,7 @@ public class MoveStepsCard implements Card{
     // Metoda vykona posun hraca.
     @Override
     public CardResult apply(Game game, Player player) {
-        boolean passedStart = player.move(steps, game.getBoardSize());
-
-        if (passedStart) {
-            System.out.println("ziskal bonus za START posunutim kartou o ... krokov");
-            player.receive(game.getGameConfig().getStartBonus());
-        }
-
+        game.movePlayer(player, steps);
         return CardResult.simple("posun o " + steps + " krokov");
     }
 
