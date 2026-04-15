@@ -1,12 +1,13 @@
-package model.cards;
+package org.hubay.byteandbuy.model.cards;
 
-import model.game.Game;
-import model.player.Player;
+import org.hubay.byteandbuy.model.game.Game;
+import org.hubay.byteandbuy.model.player.Player;
 
 // jedna karta (je jedno ci nahoda/finance)
 public interface Card {
-    void apply(Game game, Player player);
+    // vykona udalost na karte.
+    CardResult apply(Game game, Player player);
 
     // popis karty
-    String getDescription(); // optional – pre debug / UI
+    String getDescription();
 }

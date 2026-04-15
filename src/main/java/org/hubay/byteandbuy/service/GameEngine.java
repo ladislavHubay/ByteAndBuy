@@ -1,127 +1,92 @@
-package service;
+package org.hubay.byteandbuy.service;
 
-import model.game.Game;
-import model.player.Player;
-import model.tiles.PropertyTile;
-import model.tiles.Tile;
+import org.hubay.byteandbuy.model.game.Game;
+import org.hubay.byteandbuy.model.player.Player;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Random;
 
 // Herna logika.
+@Service
 public class GameEngine {
+    private final Random random;
+    private final TileActionService tileActionService;
+    private final PlayerStateService playerStateService;
+    private final TurnService turnService;
+    private final MovementService movementService;
+    private final EconomyService economyService;
+    private final JailService jailService;
+
+    public GameEngine(Random random, TileActionService tileActionService, PlayerStateService playerStateService, TurnService turnService, MovementService movementService, EconomyService economyService, JailService jailService) {
+        this.random = random;
+        this.tileActionService = tileActionService;
+        this.playerStateService = playerStateService;
+        this.turnService = turnService;
+        this.movementService = movementService;
+        this.economyService = economyService;
+        this.jailService = jailService;
+    }
+
     // metoda simuluje hod kockou.
     public int rollDice(){
-        return new Random().nextInt(6)+1;
+        return random.nextInt(6) + 1;
     }
 
-    // Ziska hraca ktory je aktualne na tahu.
-    public Player getCurrentPlayer(Game game){
-        return game.getPlayers().get(game.getCurrentPlayerIndex());
-    }
+    // Metoda riadi (Orchestruje) cely tah hraca.
+    public void playTurn(Game game) {
+        Player player = game.getCurrentPlayer();
+        System.out.println(player.getName() + " je na " + game.getCurrentTile(player).getName() +
+                " na ucte ma: " + player.getMoney());
 
-    // Posunie hraca podla hodu kockou na nove hracie policko.
-    public void movePlayer(Game game, int steps){
-        Player player = getCurrentPlayer(game);
-
-        int from = player.getPosition();
-        int boardSize = game.getBoard().getTiles().size();
-        int to = (from + steps) % boardSize;
-
-        player.setPosition(to);
-    }
-
-    // skontroluje ci hrac ma na ucte peniaze,
-    // ak nie vyradi ho z hry a jeho kupene policka nastavi na znovu kupitelne.
-    private void checkBankruptcy(Game game, Player player) {
-        if (player.getMoney() <= 0) {
-            System.out.println(player.getName() + " skrachoval/-la");
-            player.setInGame(false);
-
-            for (Tile tile : game.getBoard().getTiles()) {
-                tile.onPlayerBankrupt(player);
-            }
-        }
-    }
-
-    // ukonci tah hraca a posunie tah na dalsieho hraca.
-    public void endTurn(Game game){
-        int activePlayers = 0;
-
-        for (Player p : game.getPlayers()) {
-            if (p.isInGame()) {
-                activePlayers++;
-            }
+        if (game.isFinished()) {
+            throw new IllegalStateException("Game is already finished");
         }
 
-        if (activePlayers <= 1) {
-            game.setFinished(true);
+        int dice = rollDice();
+        System.out.println(player.getName() + " hodil/-la " + dice);
+
+        if (jailService.handleJailTurn(game, player, dice)) {
+            turnService.finishTurn(game);
             return;
         }
 
-        int nextPlayer = game.getCurrentPlayerIndex();
+        game.setDice(dice);
 
-        do {
-            nextPlayer = (nextPlayer + 1) % game.getPlayers().size();
-        } while (!game.getPlayers().get(nextPlayer).isInGame());
-
-        game.setCurrentPlayerIndex(nextPlayer);
-        System.out.println();
+        movementService.movePlayer(game, player, dice);
+        tileActionService.resolveTileEffects(game, player);
+        turnService.finishTurn(game);
     }
 
-    public void playTurn(Game game) {
-        Player player = getCurrentPlayer(game);
-        int from = player.getPosition();
+    // Metoda sa vykona ked sa hrac rozhodne kupit policko.
+    // vykona kupu policka.
+    public void buyProperty(Game game) {
+        economyService.buyProperty(game);
+        turnService.finishTurn(game);
+    }
 
-        System.out.println(player.getName() + " je na " +
-                game.getBoard().getTiles().get(player.getPosition()).getName());
-        System.out.println(player.getName() + " ma na ucte PRED: " + player.getMoney());
-
-        int dice = rollDice();
-        System.out.println("Hod kockou: " + dice);
-
-        movePlayer(game, dice);
-        handleStartPassing(game, player, from, dice);
-
-        resolveTileEffect(game, player);
-
-        if (dice != 6) {
-            endTurn(game);
-        } else {
-            System.out.println(player.getName() + " hodil 6 → hrá znova");
+    // Metoda sa vykona v pripade ak hrac sa rozhodne NEkupit policko.
+    // Posunie hru dalej bez toho aby hrac kupil policko.
+    public void skipPurchase(Game game) {
+        if (!game.isWaitingForDecision()) {
+            throw new IllegalStateException("No decision expected");
         }
+
+        game.resumePlaying();
+        System.out.println("nekupil policko");
+        turnService.finishTurn(game);
     }
 
-    // Bonus ak hrac prejde cez start.
-    private void handleStartPassing(Game game, Player player, int from, int steps) {
-        int boardSize = game.getBoard().getTiles().size();
+    // Ukonci hru pre daneho hraca.
+    public void leaveGame(Game game) {
+        Player player = game.getCurrentPlayer();
 
-        if (from + steps > boardSize) {
-            Tile startTile = game.getBoard().getStartTile();
-            startTile.interact(game, player);
+        player.setInGame(false);
+        game.resumePlaying();
+
+        playerStateService.removePlayerFromGame(game, player);
+
+        if (game.isFinished()) {
+            turnService.moveToNextPlayer(game);
         }
-    }
-
-    public void resolveTileEffect(Game game, Player player) {
-        int previousPosition;
-
-        do {
-            previousPosition = player.getPosition();
-
-            List<Tile> tiles = game.getBoard().getTiles();
-            if(tiles.get(player.getPosition()) instanceof PropertyTile property && property.getOwner() != null) {
-                System.out.println(player.getName() + " sa posunul na " + tiles.get(player.getPosition()).getName() +
-                        " vlastni ho " + property.getOwner().getName());
-            } else {
-                System.out.println(player.getName() + " sa posunul na " + tiles.get(player.getPosition()).getName());
-            }
-
-            Tile tile = game.getBoard().getTiles().get(player.getPosition());
-            tile.interact(game, player);
-
-            checkBankruptcy(game, player);
-            System.out.println(player.getName() + " ma na ucte PO: " + player.getMoney());
-
-        } while (player.getPosition() != previousPosition);
     }
 }

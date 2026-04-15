@@ -1,10 +1,12 @@
-package model.board;
+package org.hubay.byteandbuy.model.board;
 
-import model.tiles.Tile;
+import lombok.Getter;
+import org.hubay.byteandbuy.model.tiles.Tile;
 
 import java.util.List;
 
 // Hracia doska (zatial len policka).
+@Getter
 public class Board {
     // zoznam hracich policok.
     private final List<Tile> tiles;
@@ -14,13 +16,5 @@ public class Board {
     public Board(List<Tile> tiles, Tile startTile) {
         this.tiles = tiles;
         this.startTile = startTile;
-    }
-
-    public List<Tile> getTiles() {
-        return tiles;
-    }
-
-    public Tile getStartTile() {
-        return startTile;
     }
 }

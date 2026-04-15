@@ -1,21 +1,18 @@
-package model.tiles;
+package org.hubay.byteandbuy.model.tiles;
 
-import model.game.Game;
-import model.player.Player;
+import org.hubay.byteandbuy.model.game.Game;
+import org.hubay.byteandbuy.model.player.Player;
 
 // Urcuje spravanie konkretneho policka - iba policka START.
 public class StartTile extends Tile {
-    // bonus co sa pripise na ucet hraca
-    private final int bonus;
-
-    public StartTile(int position, String name, int bonus) {
+    public StartTile(int position, String name) {
         super(position, name);
-        this.bonus = bonus;
     }
 
     @Override
-    public void interact(Game game, Player player) {
-        player.setMoney(player.getMoney() + bonus);
-        System.out.println(player.getName() + " získal bonus " + bonus + " za START");
+    public TileResult interact(Game game, Player player) {
+        String message = player.getName() + " získal bonus " + game.getGameConfig().getStartBonus() + " za START - stoji na START";
+
+        return TileResult.simple(message);
     }
 }

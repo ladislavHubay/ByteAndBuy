@@ -1,4 +1,4 @@
-package org.example.byteandbuy;
+package org.hubay.byteandbuy;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,12 @@
 package org.hubay.byteandbuy.service;
 
-public class GameSirvice {
+import lombok.Getter;
+import org.hubay.byteandbuy.factory.GameFactory;
+import org.hubay.byteandbuy.model.game.Game;
+import org.springframework.stereotype.Service;
+
+@Getter
+@Service
+public class GameService {
+    private final Game game = GameFactory.createSampleGame();
 }

@@ -1,9 +1,11 @@
-package model.tiles;
+package org.hubay.byteandbuy.model.tiles;
 
-import model.game.Game;
-import model.player.Player;
+import lombok.Getter;
+import org.hubay.byteandbuy.model.game.Game;
+import org.hubay.byteandbuy.model.player.Player;
 
 // jedno policko na hracej doske. Spravanie policka urcuje trieda PropertyTile.
+@Getter
 public abstract class Tile {
     // pozicia policka v List<Tile> tiles;
     private final int position;
@@ -15,17 +17,6 @@ public abstract class Tile {
         this.name = name;
     }
 
-    // metoda na nakup policka hracom.
-    // - len urcuje ze sa ma metoda vykonat. Samotne spravanie metody urcuje Trieda ktora dedi tuto triedu.
-    public void interact(Game game, Player player) {}
-
-    public void onPlayerBankrupt(Player player) {}
-
-    public String getName() {
-        return name;
-    }
-
-    public int getPosition() {
-        return position;
-    }
+    // Metoda urcuje interakciu - spravanie policka ked je na nom hrac.
+    public abstract TileResult interact(Game game, Player player);
 }

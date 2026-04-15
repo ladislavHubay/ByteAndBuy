@@ -1,9 +1,10 @@
-package model.tiles;
+package org.hubay.byteandbuy.model.tiles;
 
-import model.cards.Card;
-import model.cards.Deck;
-import model.game.Game;
-import model.player.Player;
+import org.hubay.byteandbuy.model.cards.Card;
+import org.hubay.byteandbuy.model.cards.CardResult;
+import org.hubay.byteandbuy.model.cards.Deck;
+import org.hubay.byteandbuy.model.game.Game;
+import org.hubay.byteandbuy.model.player.Player;
 
 // Urcuje spravanie konkretneho policka - iba policka kde sa tahaju karty.
 public class CardTile extends Tile{
@@ -14,40 +15,29 @@ public class CardTile extends Tile{
         this.deck = deck;
     }
 
+    // implementuje spravanie policka ked na nom stoji hrac.
     @Override
-    public void interact(Game game, Player player) {
+    public TileResult interact(Game game, Player player) {
         Card card = deck.draw();
 
-        System.out.println(player.getName() + " ťahá kartu: " + card.getDescription());
+        String drawMessage = player.getName() + " ťahá kartu: " + card.getDescription();
+        System.out.println(drawMessage);
 
-        card.apply(game, player);
+        CardResult cardResult = card.apply(game, player);
+
+        if (cardResult.getMoveSteps() != null) {
+            int steps = cardResult.getMoveSteps();
+
+            int from = player.getPosition();
+            player.move(steps, game.getBoardSize());
+
+            if (from + steps >= game.getBoardSize()) {
+                game.getBoard().getStartTile().interact(game, player);
+            }
+        }
+
+        String finalMessage = drawMessage + " | " + cardResult.getMessage();
+
+        return TileResult.simple(finalMessage);
     }
-
-
-
-
-
-
-    // metoda implementuje spravanie pri tahani karty (zatial len simulacia tahania karty)
-    //@Override
-    //public void interact(Game game, Player player){
-    //    System.out.println(player.getName() + " ťahá kartu: " + getName());
-//
-    //    int effect = new Random().nextInt(3);
-//
-    //    switch (effect) {
-    //        case 0 -> {
-    //            player.setMoney(player.getMoney() + 100);
-    //            System.out.println("Získal si 100");
-    //        }
-    //        case 1 -> {
-    //            player.setMoney(player.getMoney() - 50);
-    //            System.out.println("Zaplatil si 50");
-    //        }
-    //        case 2 -> {
-    //            player.setPosition(0);
-    //            System.out.println("Presun na START");
-    //        }
-    //    }
-    //}
 }

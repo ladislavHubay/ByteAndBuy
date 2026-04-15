@@ -1,6 +1,10 @@
-package model.player;
+package org.hubay.byteandbuy.model.player;
+
+import lombok.Getter;
+import lombok.Setter;
 
 // hrac
+@Getter
 public class Player {
     // Nick hraca.
     private final String name;
@@ -9,7 +13,12 @@ public class Player {
     // aktualna suma penazi ktore hrac ma.
     private int money;
     // ci je hrac v hre alebo skoncil.
-    private boolean inGame;             // pre budúcnosť (bankrot)
+    @Setter
+    private boolean inGame;
+    // ci je hrac vo vazani alebo nie.
+    @Setter
+    @Getter
+    private boolean inJail;
 
     public Player(String name, int position, int money, boolean inGame) {
         this.name = name;
@@ -18,31 +27,35 @@ public class Player {
         this.inGame = inGame;
     }
 
-    public String getName() {
-        return name;
+    public boolean canAfford(int amount) {
+        return this.money >= amount;
     }
 
-    public int getPosition() {
-        return position;
+    public void pay(int amount) {
+        this.money -= amount;
     }
 
-    public int getMoney() {
-        return money;
+    public void receive(int amount) {
+        this.money += amount;
     }
 
-    public boolean isInGame() {
-        return inGame;
+    public boolean move(int steps, int boardSize) {
+        int oldPosition = this.position;
+        int newPosition = (this.position + steps) % boardSize;
+
+        this.position = newPosition;
+
+        return didPassStart(oldPosition, newPosition);
     }
 
-    public void setPosition(int position) {
+    public boolean moveTo(int position) {
+        int oldPosition = this.position;
         this.position = position;
+
+        return didPassStart(oldPosition, position);
     }
 
-    public void setMoney(int money) {
-        this.money = money;
-    }
-
-    public void setInGame(boolean inGame) {
-        this.inGame = inGame;
+    private boolean didPassStart(int oldPosition, int newPosition) {
+        return newPosition < oldPosition;
     }
 }

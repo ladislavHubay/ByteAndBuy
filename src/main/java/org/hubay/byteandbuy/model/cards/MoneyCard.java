@@ -1,10 +1,13 @@
-package model.cards;
+package org.hubay.byteandbuy.model.cards;
 
-import model.game.Game;
-import model.player.Player;
+import org.hubay.byteandbuy.model.game.Game;
+import org.hubay.byteandbuy.model.player.Player;
 
+// Karticka obsahujuca financna akciu.
 public class MoneyCard implements Card {
+    // Hodnota na karte
     private final int money;
+    // Popis karty
     private final String description;
 
     public MoneyCard(int money, String description) {
@@ -12,11 +15,14 @@ public class MoneyCard implements Card {
         this.description = description;
     }
 
+    // Metoda vykona financnu transakciu na ucte hraca podla karty.
     @Override
-    public void apply(Game game, Player player) {
-        player.setMoney(player.getMoney() + money);
+    public CardResult apply(Game game, Player player) {
+        player.receive(money);
+        return CardResult.simple(description);
     }
 
+    // Vrati popis karty.
     @Override
     public String getDescription() {
         return description;
