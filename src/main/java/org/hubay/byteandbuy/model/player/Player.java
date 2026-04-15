@@ -39,23 +39,14 @@ public class Player {
         this.money += amount;
     }
 
-    public boolean move(int steps, int boardSize) {
-        int oldPosition = this.position;
+    public int move(int steps, int boardSize) {
         int newPosition = (this.position + steps) % boardSize;
-
         this.position = newPosition;
-
-        return didPassStart(oldPosition, newPosition);
+        return newPosition;
     }
 
-    public boolean moveTo(int position) {
-        int oldPosition = this.position;
+    public int moveTo(int position) {
         this.position = position;
-
-        return didPassStart(oldPosition, position);
-    }
-
-    private boolean didPassStart(int oldPosition, int newPosition) {
-        return newPosition < oldPosition;
+        return position;
     }
 }

@@ -71,22 +71,28 @@ public class Game {
     }
 
     public boolean movePlayer(Player player, int steps) {
-        boolean passedStart = player.move(steps, getBoardSize());
+        int oldPosition = player.getPosition();
+        int newPosition = player.move(steps, getBoardSize());
+
+        boolean passedStart = newPosition < oldPosition;
 
         if (passedStart) {
-            System.out.println("BONUS TRIGGER - movePlayer");
             player.receive(gameConfig.getStartBonus());
+            System.out.println("BONUS TRIGGER - movePlayer");
         }
 
         return passedStart;
     }
 
     public boolean movePlayerTo(Player player, int position) {
-        boolean passedStart = player.moveTo(position);
+        int oldPosition = player.getPosition();
+        int newPosition = player.moveTo(position);
+
+        boolean passedStart = newPosition < oldPosition;
 
         if (passedStart) {
-            System.out.println("BONUS TRIGGER - movePlayerTo");
             player.receive(gameConfig.getStartBonus());
+            System.out.println("BONUS TRIGGER - movePlayerTo");
         }
 
         return passedStart;

@@ -39,9 +39,9 @@ public class GameFactory {
     // Vytvori balicek kariet s nahodnymi efektami.
     private static Deck createCardsWithRandomEvents() {
         List<Card> randomEventCards = List.of(
-                new MoveStepsCard(1, "Posun sa o 1 policka dopredu"),
-                new MoveToPositionCard(START_POSITION, "Posun sa na START"),
-                new GoToJailCard(13, "Presun sa do vazania")
+                new MoveStepsCard(3, "Posun sa o 3 policka dopredu")
+                //new MoveToPositionCard(START_POSITION, "Posun sa na START")
+                //new GoToJailCard(13, "Presun sa do vazania")
         );
 
         return new Deck(randomEventCards);
