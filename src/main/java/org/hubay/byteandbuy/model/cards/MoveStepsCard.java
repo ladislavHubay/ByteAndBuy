@@ -18,7 +18,7 @@ public class MoveStepsCard implements Card{
     // Metoda vykona posun hraca.
     @Override
     public CardResult apply(Game game, Player player) {
-        game.movePlayer(player, steps);
+        game.movePlayer(player, steps, true);
         return CardResult.simple("posun o " + steps + " krokov");
     }
 

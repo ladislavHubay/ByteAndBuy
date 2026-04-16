@@ -9,6 +9,6 @@ import org.springframework.stereotype.Service;
 public class MovementService {
     // Posunie hraca podla hodu kockou na nove hracie policko.
     public void movePlayer(Game game, Player player, int steps) {
-        game.movePlayer(player, steps);
+        game.movePlayer(player, steps, true);
     }
 }
