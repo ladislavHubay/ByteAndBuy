@@ -39,9 +39,9 @@ public class GameFactory {
     // Vytvori balicek kariet s nahodnymi efektami.
     private static Deck createCardsWithRandomEvents() {
         List<Card> randomEventCards = List.of(
-                //new MoveStepsCard(3, "Posun sa o 3 policka dopredu"),
+                new MoveStepsCard(3, "Posun sa o 3 policka dopredu")
                 //new MoveToPositionCard(START_POSITION, "Posun sa na START"),
-                new GoToJailCard(13, "Presun sa do vazania")
+                //new GoToJailCard(13, "Presun sa do vazania")
         );
 
         return new Deck(randomEventCards);
@@ -73,24 +73,24 @@ public class GameFactory {
         tiles.add(startTile);
 
         PropertyGroup firma1 = new PropertyGroup("Firma 1");
-        addPropertyGroup(tiles, firma1, 1, "policko_1", 100, 50, null);
-        addPropertyGroup(tiles, firma1, 2, "policko_2", 100, 50, null);
-        addPropertyGroup(tiles, firma1, 3, "policko_3", 100, 50, null);
+        addPropertyGroup(tiles, firma1, 1, "policko_1", 100, 50);
+        addPropertyGroup(tiles, firma1, 2, "policko_2", 100, 50);
+        addPropertyGroup(tiles, firma1, 3, "policko_3", 100, 50);
 
         tiles.add(new WorkshopTile(4, "dielna_4", 100, 0.2));
 
         tiles.add(new CardTile(5, "nahoda_5", randomEventsDeck));
 
         PropertyGroup firma2 = new PropertyGroup("Firma 2");
-        addPropertyGroup(tiles, firma2, 6, "policko_6", 100, 50, null);
-        addPropertyGroup(tiles, firma2, 7, "policko_7", 100, 50, null);
-        addPropertyGroup(tiles, firma2, 8, "policko_8", 100, 50, null);
+        addPropertyGroup(tiles, firma2, 6, "policko_6", 100, 50);
+        addPropertyGroup(tiles, firma2, 7, "policko_7", 100, 50);
+        addPropertyGroup(tiles, firma2, 8, "policko_8", 100, 50);
 
         tiles.add(new CardTile(9, "finance_9", financialTransactionsDeck));
 
         PropertyGroup firma3 = new PropertyGroup("Firma 3");
-        addPropertyGroup(tiles, firma3, 10, "policko_10", 100, 50, null);
-        addPropertyGroup(tiles, firma3, 11, "policko_11", 100, 50, null);
+        addPropertyGroup(tiles, firma3, 10, "policko_10", 100, 50);
+        addPropertyGroup(tiles, firma3, 11, "policko_11", 100, 50);
 
         tiles.add(new ServerTile(12, "Serverovna_12", 150, 20));
         tiles.add(new JailTile(13, "Vazanie_13"));
@@ -105,8 +105,8 @@ public class GameFactory {
 
     // Helper pre createTiles() - pre vytvaranie policok.
     private static void addPropertyGroup(List<Tile> tiles, PropertyGroup propertyGroup,
-                                         int position, String name, int price, int rent, Player owner) {
-        PropertyTile propertyTile = new PropertyTile(position, name, price, rent, owner, propertyGroup);
+                                         int position, String name, int price, int rent) {
+        PropertyTile propertyTile = new PropertyTile(position, name, price, rent, propertyGroup);
         propertyGroup.addProperty(propertyTile);
         tiles.add(propertyTile);
     }

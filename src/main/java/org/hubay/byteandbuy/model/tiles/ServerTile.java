@@ -1,20 +1,15 @@
 package org.hubay.byteandbuy.model.tiles;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
-public class ServerTile extends Tile implements Buyable, BankruptAware{
+public class ServerTile extends AbstractOwnableTile{
     // Cena za nakup policka
     @Getter
     private final int price;
     // Suma za platbu ak hrac zastavi na policku
     private final int rent;
-    // Vlastnik policka
-    @Setter
-    @Getter
-    private Player owner;
 
     public ServerTile(int position, String name, int price, int baseRent) {
         super(position, name);
@@ -25,14 +20,14 @@ public class ServerTile extends Tile implements Buyable, BankruptAware{
     // metoda implementuje spravanie konkretneho policka.
     @Override
     public TileResult interact(Game game, Player player) {
-        if (owner == null) {
+        if (getOwner() == null) {
             String message = "Server je na predaj";
             System.out.println(message);
 
             return TileResult.decision(message);
         }
 
-        if (owner == player) {
+        if (getOwner() == player) {
             String message = "Stojíš na vlastnom serveri";
             System.out.println(message);
 
@@ -43,9 +38,9 @@ public class ServerTile extends Tile implements Buyable, BankruptAware{
         int totalRent = rent * propertyCount;
 
         player.pay(totalRent);
-        owner.receive(totalRent);
+        getOwner().receive(totalRent);
 
-        String message = player.getName() + " zaplatil " + totalRent + " za pouzitie serverovne hráčovi " + owner.getName();
+        String message = player.getName() + " zaplatil " + totalRent + " za pouzitie serverovne hráčovi " + getOwner().getName();
         System.out.println(message);
 
         return TileResult.simple(message);
@@ -64,12 +59,5 @@ public class ServerTile extends Tile implements Buyable, BankruptAware{
         }
 
         return count;
-    }
-
-    @Override
-    public void onPlayerBankrupt(Player player) {
-        if (owner == player) {
-            owner = null;
-        }
     }
 }
