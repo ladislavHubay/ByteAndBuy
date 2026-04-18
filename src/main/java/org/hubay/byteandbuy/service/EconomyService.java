@@ -41,11 +41,10 @@ public class EconomyService {
     // Vypocita finalnu sumu ktoru hrac zaplati pri nakupe noveho PropertyTile (zlacnene ked hrac vlastni dielnu).
     private int calculateFinalPrice(Game game, Player player, Buyable tile) {
         double discount = 0;
-
         for (Tile t : game.getBoard().getTiles()) {
             if (t instanceof WorkshopTile workshop) {
                 if (workshop.getOwner() == player) {
-                    discount += workshop.getDiscount();
+                    discount += game.getGameConfig().getWorkshopDiscount();
                 }
             }
         }

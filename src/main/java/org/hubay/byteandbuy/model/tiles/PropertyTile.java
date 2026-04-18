@@ -27,26 +27,23 @@ public class PropertyTile extends AbstractOwnableTile{
     public TileResult interact(Game game, Player player) {
         if (getOwner() == null) {
             game.getEventCollector().add(player.getName() + " môže kúpiť " + getName());
-
             return TileResult.WAIT_FOR_DECISION;
         }
 
         if (getOwner() != player) {
-            int payment = handleRentPayment(player);
+            int payment = handleRentPayment(game, player);
 
             game.getEventCollector().add(player.getName() + " zaplatil nájom " + payment + " hracovy " + getOwner().getName());
-
             return TileResult.CONTINUE;
         }
 
         game.getEventCollector().add(player.getName() + " je na vlastnom políčku");
-
         return TileResult.CONTINUE;
     }
 
     // pomocna metoda na riesenie platby prenajmu ak jeden hrac stoji na policku vlastnenom inym hracom.
-    private int handleRentPayment(Player player) {
-        int payment = Math.min(player.getMoney(), calculateRent());
+    private int handleRentPayment(Game game, Player player) {
+        int payment = Math.min(player.getMoney(), calculateRent(game));
 
         player.pay(payment);
         getOwner().receive(payment);
@@ -55,9 +52,9 @@ public class PropertyTile extends AbstractOwnableTile{
     }
 
     // Navysi rent v pripade ak hrac vlastni vsetko z GROUP.
-    private int calculateRent() {
+    private int calculateRent(Game game) {
         if (group != null && group.ownsAll(getOwner())) {
-            return (int)(rent * 1.5);
+            return (int)(rent * game.getGameConfig().getFullGroupRentMultiplier());
         }
         return rent;
     }

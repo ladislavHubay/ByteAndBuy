@@ -72,7 +72,7 @@ public class GameFactory {
     }
 
     // Vytvory zoznam hracich policok.
-    private static List<Tile> createTiles(Deck randomEventsDeck, Deck financialTransactionsDeck, Tile startTile) {
+    private List<Tile> createTiles(Deck randomEventsDeck, Deck financialTransactionsDeck, Tile startTile) {
         List<Tile> tiles = new ArrayList<>();
         tiles.add(startTile);
 
@@ -81,7 +81,7 @@ public class GameFactory {
         addPropertyGroup(tiles, firma1, 2, "policko_2", 100, 50);
         addPropertyGroup(tiles, firma1, 3, "policko_3", 100, 50);
 
-        tiles.add(new WorkshopTile(4, "dielna_4", 100, 0.2));
+        tiles.add(new WorkshopTile(4, "dielna_4", 100));
 
         tiles.add(new CardTile(5, "nahoda_5", randomEventsDeck));
 

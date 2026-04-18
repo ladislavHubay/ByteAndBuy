@@ -1,7 +1,6 @@
 package org.hubay.byteandbuy.model.tiles;
 
 import lombok.Getter;
-import org.hubay.byteandbuy.dto.TurnResponse;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
@@ -9,14 +8,10 @@ public class WorkshopTile extends AbstractOwnableTile{
     // Hodnota policka pre nakup
     @Getter
     private final int price;
-    // Hodnota o kolko sa znizi cena dalsieho PropertyTile pre hraca. Napr. 0.1 = 10%
-    @Getter
-    private final double discount;
 
-    public WorkshopTile(int position, String name, int price, double discount) {
+    public WorkshopTile(int position, String name, int price) {
         super(position, name);
         this.price = price;
-        this.discount = discount;
     }
 
     // metoda implementuje spravanie konkretneho policka.
