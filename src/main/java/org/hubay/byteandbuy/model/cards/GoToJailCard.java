@@ -16,11 +16,9 @@ public class GoToJailCard implements Card {
     }
 
     @Override
-    public CardResult apply(Game game, Player player) {
+    public void apply(Game game, Player player) {
         game.movePlayerTo(player, position, false);
         player.setInJail(true);
-
-        return CardResult.simple(description);
     }
 
     @Override

@@ -21,17 +21,15 @@ public class ServerTile extends AbstractOwnableTile{
     @Override
     public TileResult interact(Game game, Player player) {
         if (getOwner() == null) {
-            String message = "Server je na predaj";
-            System.out.println(message);
+            game.getEventCollector().add("Server je na predaj");
 
-            return TileResult.decision(message);
+            return TileResult.WAIT_FOR_DECISION;
         }
 
         if (getOwner() == player) {
-            String message = "Stojíš na vlastnom serveri";
-            System.out.println(message);
+            game.getEventCollector().add("Stojíš na vlastnom serveri");
 
-            return TileResult.simple(message);
+            return TileResult.WAIT_FOR_DECISION;
         }
 
         int propertyCount = countPlayerProperties(player, game);
@@ -40,10 +38,10 @@ public class ServerTile extends AbstractOwnableTile{
         player.pay(totalRent);
         getOwner().receive(totalRent);
 
-        String message = player.getName() + " zaplatil " + totalRent + " za pouzitie serverovne hráčovi " + getOwner().getName();
-        System.out.println(message);
+        game.getEventCollector().add(player.getName() + " zaplatil " + totalRent +
+                " za pouzitie serverovne hráčovi " + getOwner().getName());
 
-        return TileResult.simple(message);
+        return TileResult.CONTINUE;
     }
 
     // Metoda spocita pocet policok (propertyTile) ktore vlastni hrac.

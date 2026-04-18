@@ -26,22 +26,22 @@ public class PropertyTile extends AbstractOwnableTile{
     @Override
     public TileResult interact(Game game, Player player) {
         if (getOwner() == null) {
-            String message = player.getName() + " môže kúpiť " + getName();
-            System.out.println(message);
+            game.getEventCollector().add(player.getName() + " môže kúpiť " + getName());
 
-            return TileResult.decision(message);
+            return TileResult.WAIT_FOR_DECISION;
         }
 
         if (getOwner() != player) {
             int payment = handleRentPayment(player);
 
-            String message = player.getName() + " zaplatil nájom " + payment + " hracovy " + getOwner().getName();
-            System.out.println(message);
+            game.getEventCollector().add(player.getName() + " zaplatil nájom " + payment + " hracovy " + getOwner().getName());
 
-            return TileResult.simple(message);
+            return TileResult.CONTINUE;
         }
 
-        return TileResult.simple(player.getName() + " je na vlastnom políčku");
+        game.getEventCollector().add(player.getName() + " je na vlastnom políčku");
+
+        return TileResult.CONTINUE;
     }
 
     // pomocna metoda na riesenie platby prenajmu ak jeden hrac stoji na policku vlastnenom inym hracom.

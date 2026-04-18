@@ -15,8 +15,9 @@ public class JailService {
 
         if (dice == 6) {
             player.setInJail(false);
+            game.getEventCollector().add(player.getName() + " sa dostal z väzenia");
         } else {
-            System.out.println(player.getName() + " zostava vo vazani");
+            game.getEventCollector().add(player.getName() + " zostáva vo väzení");
         }
 
         return true;

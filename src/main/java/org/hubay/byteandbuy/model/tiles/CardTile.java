@@ -1,7 +1,6 @@
 package org.hubay.byteandbuy.model.tiles;
 
 import org.hubay.byteandbuy.model.cards.Card;
-import org.hubay.byteandbuy.model.cards.CardResult;
 import org.hubay.byteandbuy.model.cards.Deck;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
@@ -20,13 +19,10 @@ public class CardTile extends Tile{
     public TileResult interact(Game game, Player player) {
         Card card = deck.draw();
 
-        String drawMessage = player.getName() + " ťahá kartu: " + card.getDescription();
-        System.out.println(drawMessage);
+        game.getEventCollector().add(player.getName() + " ťahá kartu: " + card.getDescription());
 
-        CardResult cardResult = card.apply(game, player);
+        card.apply(game, player);
 
-        String finalMessage = drawMessage + " | " + cardResult.getMessage();
-
-        return TileResult.simple(finalMessage);
+        return TileResult.CONTINUE;
     }
 }

@@ -30,9 +30,9 @@ public class EconomyService {
             player.pay(price);
             buyable.setOwner(player);
 
-            System.out.println(player.getName() + " kúpil " + tile.getName() + " za " + price);
+            game.getEventCollector().add(player.getName() + " kúpil " + tile.getName() + " za " + price);
         } else {
-            System.out.println("Nemas dost na ucte");
+            game.getEventCollector().add("Nemas dost na ucte");
         }
 
         game.resumePlaying();

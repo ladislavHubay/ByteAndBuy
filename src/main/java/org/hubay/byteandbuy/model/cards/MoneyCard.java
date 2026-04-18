@@ -17,9 +17,8 @@ public class MoneyCard implements Card {
 
     // Metoda vykona financnu transakciu na ucte hraca podla karty.
     @Override
-    public CardResult apply(Game game, Player player) {
+    public void apply(Game game, Player player) {
         player.receive(money);
-        return CardResult.simple(description);
     }
 
     // Vrati popis karty.

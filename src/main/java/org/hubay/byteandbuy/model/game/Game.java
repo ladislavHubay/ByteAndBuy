@@ -3,6 +3,7 @@ package org.hubay.byteandbuy.model.game;
 import lombok.Getter;
 import lombok.Setter;
 import org.hubay.byteandbuy.config.GameConfig;
+import org.hubay.byteandbuy.event.GameEventCollector;
 import org.hubay.byteandbuy.model.board.Board;
 import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.Tile;
@@ -12,6 +13,8 @@ import java.util.List;
 // konkrétna bežiaca hra v danom momente.
 @Getter
 public class Game {
+    @Setter
+    private transient GameEventCollector eventCollector;
     // Pravidla hry (bonus za start, multyplikatory,....)
     private final GameConfig gameConfig;
     // zoznam hracov - indexy 0 az N urcuje poradie hracaov.
@@ -70,7 +73,7 @@ public class Game {
         return board.getTiles().size();
     }
 
-    public boolean movePlayer(Player player, int steps, boolean applyStartBonus) {
+    public void movePlayer(Player player, int steps, boolean applyStartBonus) {
         int oldPosition = player.getPosition();
         int newPosition = player.move(steps, getBoardSize());
 
@@ -78,13 +81,11 @@ public class Game {
 
         if (passedStart && applyStartBonus) {
             player.receive(gameConfig.getStartBonus());
-            System.out.println("BONUS TRIGGER - movePlayer");
+            eventCollector.add(player.getName() + " ziskal bonus za START");
         }
-
-        return passedStart;
     }
 
-    public boolean movePlayerTo(Player player, int position, boolean applyStartBonus) {
+    public void movePlayerTo(Player player, int position, boolean applyStartBonus) {
         int oldPosition = player.getPosition();
         int newPosition = player.moveTo(position);
 
@@ -92,9 +93,7 @@ public class Game {
 
         if (passedStart && applyStartBonus) {
             player.receive(gameConfig.getStartBonus());
-            System.out.println("BONUS TRIGGER - movePlayerTo");
+            eventCollector.add(player.getName() + " ziskal bonus za START");
         }
-
-        return passedStart;
     }
 }

@@ -15,21 +15,20 @@ public class TurnService {
     // Zabespeci kontrolu ci je na tahu znovu aktualny hrac (napriklad hodil 6) alebo sa ukonci tah aktualneho hraca,
     public void finishTurn(Game game) {
         Player player = game.getCurrentPlayer();
-        //Player player = getCurrentPlayer(game);
 
         if(game.isWaitingForDecision()){
             return;
         }
 
         if (shouldEndTurn(game, player)) {
-            System.out.println(player.getName() + " ma na ucte PO: " + player.getMoney());
+            game.getEventCollector().add(player.getName() + " ma na ucte: " + player.getMoney());
             moveToNextPlayer(game);
         } else {
-            System.out.println(player.getName() + " hodil 6 → hrá znova");
+            game.getEventCollector().add(player.getName() + " hodil 6 → hrá znova");
         }
     }
 
-    private boolean shouldEndTurn(Game game, Player player) {
+    public boolean shouldEndTurn(Game game, Player player) {
         return game.getLastDice() != 6
                 || player.isInJail()
                 || !player.isInGame();
@@ -50,6 +49,5 @@ public class TurnService {
         } while (!game.getPlayers().get(nextPlayer).isInGame());
 
         game.setCurrentPlayerIndex(nextPlayer);
-        System.out.println();
     }
 }

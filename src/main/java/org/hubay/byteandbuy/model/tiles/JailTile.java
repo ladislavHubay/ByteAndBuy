@@ -11,7 +11,6 @@ public class JailTile extends Tile {
 
     @Override
     public TileResult interact(Game game, Player player) {
-        String message = player.getName() + " je vo väzení";
-        return TileResult.simple(message);
+        return TileResult.CONTINUE;
     }
 }

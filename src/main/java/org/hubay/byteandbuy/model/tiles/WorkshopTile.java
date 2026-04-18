@@ -1,6 +1,7 @@
 package org.hubay.byteandbuy.model.tiles;
 
 import lombok.Getter;
+import org.hubay.byteandbuy.dto.TurnResponse;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
@@ -22,15 +23,13 @@ public class WorkshopTile extends AbstractOwnableTile{
     @Override
     public TileResult interact(Game game, Player player) {
         if (getOwner() == null) {
-            String message = "Môžeš kúpiť dielňu";
-            System.out.println(message);
+            game.getEventCollector().add("Môžeš kúpiť dielňu");
 
-            return TileResult.decision(message);
+            return TileResult.WAIT_FOR_DECISION;
         }
 
-        String message = player.getName() + " je na dielni – bez poplatku. Vlastni ho " + getOwner().getName();
-        System.out.println(message);
+        game.getEventCollector().add(player.getName() + " je na dielni – bez poplatku. Vlastni ho " + getOwner().getName());
 
-        return TileResult.simple(message);
+        return TileResult.CONTINUE;
     }
 }

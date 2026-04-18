@@ -26,7 +26,7 @@ public class TileActionService {
 
             TileResult result = applyTileEffect(game, player);
 
-            if (result.isRequiresDecision()) {
+            if (TileResult.WAIT_FOR_DECISION == result) {
                 game.waitForDecision();
             }
 
@@ -43,11 +43,10 @@ public class TileActionService {
         Tile tile = game.getCurrentTile(player);
 
         if (tile instanceof PropertyTile property && property.getOwner() != null) {
-            System.out.println(player.getName() + " sa posunul na " +
+            game.getEventCollector().add(player.getName() + " sa posunul na " +
                     tile.getName() + " vlastni ho " + property.getOwner().getName());
         } else {
-            System.out.println(player.getName() + " sa posunul na " +
-                    tile.getName());
+            game.getEventCollector().add(player.getName() + " sa posunul na " + tile.getName());
         }
 
         return tile.interact(game, player);

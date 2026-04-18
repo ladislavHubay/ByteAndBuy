@@ -1,5 +1,6 @@
 package org.hubay.byteandbuy.controller;
 
+import org.hubay.byteandbuy.dto.TurnResponse;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.service.GameEngine;
 import org.hubay.byteandbuy.service.GameService;
@@ -22,28 +23,25 @@ public class GameController {
     // Spustenie jedného ťahu
     // http://localhost:8080/game/turn
     @PostMapping("/turn")
-    public Game playTurn() {
+    public TurnResponse playTurn() {
         Game game = gameService.getGame();
-        engine.playTurn(game);
-        return game;
+        return engine.playTurn(game);
     }
 
     // spusti nakup policka na ktorom hrac stoji
     // http://localhost:8080/game/buy
     @PostMapping("/buy")
-    public Game buyProperty() {
+    public TurnResponse buyProperty() {
         Game game = gameService.getGame();
-        engine.buyProperty(game);
-        return game;
+        return engine.buyProperty(game);
     }
 
     // Volba - nekupit policko
     // http://localhost:8080/game/skip
     @PostMapping("/skip")
-    public Game skip() {
+    public TurnResponse skip() {
         Game game = gameService.getGame();
-        engine.skipPurchase(game);
-        return game;
+        return engine.skipPurchase(game);
     }
 
     // Hrac ukonci svoju hru. Ostatny hraci hraju dalej.

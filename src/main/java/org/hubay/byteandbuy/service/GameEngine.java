@@ -1,7 +1,10 @@
 package org.hubay.byteandbuy.service;
 
+import org.hubay.byteandbuy.dto.TurnResponse;
+import org.hubay.byteandbuy.event.GameEventCollector;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
+import org.hubay.byteandbuy.model.tiles.Tile;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
@@ -33,47 +36,106 @@ public class GameEngine {
     }
 
     // Metoda riadi (Orchestruje) cely tah hraca.
-    public void playTurn(Game game) {
-        Player player = game.getCurrentPlayer();
-        System.out.println(player.getName() + " je na " + game.getCurrentTile(player).getName() +
-                " na ucte ma: " + player.getMoney());
+    public TurnResponse playTurn(Game game) {
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
 
-        if (game.isFinished()) {
-            throw new IllegalStateException("Game is already finished");
-        }
+        Player player = game.getCurrentPlayer();
+
+        TurnResponse response = new TurnResponse();
+
+        response.setCurrentPlayer(player.getName());
+        response.setFromPosition(player.getPosition());
+
+        collector.add(player.getName() + " je na pozícii " +
+                game.getCurrentTile(player).getName() +
+                ", má: " + player.getMoney());
 
         int dice = rollDice();
-        System.out.println(player.getName() + " hodil/-la " + dice);
+        game.setDice(dice);
+
+        response.setDice(dice);
+
+        collector.add(player.getName() + " hodil " + dice);
 
         if (jailService.handleJailTurn(game, player, dice)) {
             turnService.finishTurn(game);
-            return;
+            response.setEvents(collector.getEvents());
+            return response;
         }
 
-        game.setDice(dice);
-
         movementService.movePlayer(game, player, dice);
+
+        response.setToPosition(player.getPosition());
+        response.setTileName(game.getCurrentTile(player).getName());
+
         tileActionService.resolveTileEffects(game, player);
+
+        response.setMoney(player.getMoney());
+
+        boolean extraTurn = turnService.shouldEndTurn(game, player);
+        response.setExtraTurn(extraTurn);
+
         turnService.finishTurn(game);
+
+        response.setNextPlayer(game.getCurrentPlayer().getName());
+
+        response.setEvents(collector.getEvents());
+
+        return response;
     }
 
     // Metoda sa vykona ked sa hrac rozhodne kupit policko.
     // vykona kupu policka.
-    public void buyProperty(Game game) {
+    public TurnResponse buyProperty(Game game) {
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
+
+        Player player = game.getCurrentPlayer();
+        Tile tile = game.getCurrentTile(player);
+
+        TurnResponse response = new TurnResponse();
+        response.setCurrentPlayer(player.getName());
+        response.setTileName(tile.getName());
+
         economyService.buyProperty(game);
+
+        int moneyAfter = player.getMoney();
+        response.setMoney(moneyAfter);
+
         turnService.finishTurn(game);
+
+        response.setNextPlayer(game.getCurrentPlayer().getName());
+        response.setEvents(collector.getEvents());
+
+        return response;
     }
 
     // Metoda sa vykona v pripade ak hrac sa rozhodne NEkupit policko.
     // Posunie hru dalej bez toho aby hrac kupil policko.
-    public void skipPurchase(Game game) {
+    public TurnResponse skipPurchase(Game game) {
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
+
+        Player player = game.getCurrentPlayer();
+
         if (!game.isWaitingForDecision()) {
             throw new IllegalStateException("No decision expected");
         }
 
+        TurnResponse response = new TurnResponse();
+        response.setCurrentPlayer(player.getName());
+
+        collector.add(player.getName() + " nekúpil políčko");
+
         game.resumePlaying();
-        System.out.println("nekupil policko");
+
         turnService.finishTurn(game);
+
+        response.setNextPlayer(game.getCurrentPlayer().getName());
+        response.setEvents(collector.getEvents());
+
+        return response;
     }
 
     // Ukonci hru pre daneho hraca.

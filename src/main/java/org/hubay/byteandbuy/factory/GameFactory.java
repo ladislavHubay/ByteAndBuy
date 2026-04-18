@@ -14,6 +14,7 @@ public class GameFactory {
     private static final int START_MONEY = 210;
     private static final int START_BONUS = 10;
     private static final int START_POSITION = 0;
+    private static final int JAIL_POSITION = 13;
 
     public static Game createSampleGame() {
         // Hraci
@@ -39,9 +40,9 @@ public class GameFactory {
     // Vytvori balicek kariet s nahodnymi efektami.
     private static Deck createCardsWithRandomEvents() {
         List<Card> randomEventCards = List.of(
-                new MoveStepsCard(3, "Posun sa o 3 policka dopredu")
-                //new MoveToPositionCard(START_POSITION, "Posun sa na START"),
-                //new GoToJailCard(13, "Presun sa do vazania")
+                new MoveStepsCard(3, "Posun sa o 3 policka dopredu"),
+                new MoveToPositionCard(START_POSITION, "Posun sa na START"),
+                new GoToJailCard(JAIL_POSITION, "Presun sa do vazania")
         );
 
         return new Deck(randomEventCards);

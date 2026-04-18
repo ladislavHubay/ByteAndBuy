@@ -17,9 +17,8 @@ public class MoveToPositionCard implements Card {
 
     // Vykona presun hraca na danu poziciu na hracej doske.
     @Override
-    public CardResult apply(Game game, Player player) {
+    public void apply(Game game, Player player) {
         game.movePlayerTo(player, position, true);
-        return CardResult.simple("Posun na " + description);
     }
 
     // Popis na karte.

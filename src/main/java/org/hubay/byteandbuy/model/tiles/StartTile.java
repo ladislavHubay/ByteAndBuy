@@ -11,8 +11,6 @@ public class StartTile extends Tile {
 
     @Override
     public TileResult interact(Game game, Player player) {
-        String message = player.getName() + " získal bonus " + game.getGameConfig().getStartBonus() + " za START - stoji na START";
-
-        return TileResult.simple(message);
+        return TileResult.CONTINUE;
     }
 }

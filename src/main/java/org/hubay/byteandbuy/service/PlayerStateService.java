@@ -14,7 +14,7 @@ public class PlayerStateService {
     // V pripade ak ostane v hre iba jeden hrac, hra skonci.
     public void checkBankruptcy(Game game, Player player) {
         if (player.getMoney() <= 0) {
-            System.out.println(player.getName() + " skrachoval/-la");
+            game.getEventCollector().add(player.getName() + " skrachoval/-la");
             removePlayerFromGame(game, player);
         }
     }
