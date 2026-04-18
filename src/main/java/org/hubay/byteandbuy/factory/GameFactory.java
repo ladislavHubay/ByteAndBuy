@@ -105,9 +105,9 @@ public class GameFactory {
     }
 
     // Helper pre createTiles() - pre vytvaranie policok.
-    private static void addPropertyGroup(List<Tile> tiles, PropertyGroup propertyGroup,
+    private void addPropertyGroup(List<Tile> tiles, PropertyGroup propertyGroup,
                                          int position, String name, int price, int rent) {
-        PropertyTile propertyTile = new PropertyTile(position, name, price, rent, propertyGroup);
+        PropertyTile propertyTile = new PropertyTile(position, name, price, rent, propertyGroup, config.getFullGroupRentMultiplier());
         propertyGroup.addProperty(propertyTile);
         tiles.add(propertyTile);
     }

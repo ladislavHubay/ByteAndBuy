@@ -15,12 +15,14 @@ public class PropertyTile extends AbstractOwnableTile{
     private final int price;
     // cena na zaplatenie najmu (ak toto policko vlastni iny hrac)
     private final int rent;
+    private final double fullGroupRentMultiplier;
 
-    public PropertyTile(int position, String name, int price, int rent, PropertyGroup group) {
+    public PropertyTile(int position, String name, int price, int rent, PropertyGroup group, double fullGroupRentMultiplier) {
         super(position, name);
         this.price = price;
         this.rent = rent;
         this.group = group;
+        this.fullGroupRentMultiplier = fullGroupRentMultiplier;
     }
 
     @Override
@@ -31,7 +33,7 @@ public class PropertyTile extends AbstractOwnableTile{
         }
 
         if (getOwner() != player) {
-            int payment = handleRentPayment(game, player);
+            int payment = handleRentPayment(player);
 
             game.getEventCollector().add(player.getName() + " zaplatil nájom " + payment + " hracovy " + getOwner().getName());
             return TileResult.CONTINUE;
@@ -42,8 +44,8 @@ public class PropertyTile extends AbstractOwnableTile{
     }
 
     // pomocna metoda na riesenie platby prenajmu ak jeden hrac stoji na policku vlastnenom inym hracom.
-    private int handleRentPayment(Game game, Player player) {
-        int payment = Math.min(player.getMoney(), calculateRent(game));
+    private int handleRentPayment(Player player) {
+        int payment = Math.min(player.getMoney(), calculateRent());
 
         player.pay(payment);
         getOwner().receive(payment);
@@ -52,9 +54,9 @@ public class PropertyTile extends AbstractOwnableTile{
     }
 
     // Navysi rent v pripade ak hrac vlastni vsetko z GROUP.
-    private int calculateRent(Game game) {
+    private int calculateRent() {
         if (group != null && group.ownsAll(getOwner())) {
-            return (int)(rent * game.getGameConfig().getFullGroupRentMultiplier());
+            return (int)(rent * fullGroupRentMultiplier);
         }
         return rent;
     }
