@@ -8,5 +8,9 @@ import org.springframework.stereotype.Service;
 @Getter
 @Service
 public class GameService {
-    private final Game game = GameFactory.createSampleGame();
+    private final Game game;
+
+    public GameService(GameFactory factory) {
+        this.game = factory.createSampleGame();
+    }
 }

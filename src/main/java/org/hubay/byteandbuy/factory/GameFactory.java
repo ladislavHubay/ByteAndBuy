@@ -6,17 +6,23 @@ import org.hubay.byteandbuy.model.cards.*;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.*;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class GameFactory {
-    private static final int START_MONEY = 210;
-    private static final int START_BONUS = 10;
+    private final GameConfig config;
+
     private static final int START_POSITION = 0;
     private static final int JAIL_POSITION = 13;
 
-    public static Game createSampleGame() {
+    public GameFactory(GameConfig config) {
+        this.config = config;
+    }
+
+    public Game createSampleGame() {
         // Hraci
         List<Player> players = createPlayers();
 
@@ -30,9 +36,6 @@ public class GameFactory {
 
         // Hracia doska
         Board board = new Board(tiles, startTile);
-
-        // Pravidla hry
-        GameConfig config = new GameConfig(START_BONUS);
 
         return new Game(config, players, board, START_POSITION);
     }
@@ -59,11 +62,11 @@ public class GameFactory {
     }
 
     // Vytvori zoznam hracov.
-    private static List<Player> createPlayers() {
+    private List<Player> createPlayers() {
         List<Player> players = new ArrayList<>();
-        players.add(new Player("Peter", START_POSITION, START_MONEY, true));
-        players.add(new Player("Katka", START_POSITION, START_MONEY, true));
-        players.add(new Player("Andrea", START_POSITION, START_MONEY, true));
+        players.add(new Player("Peter", START_POSITION, config.getStartMoney(), true));
+        players.add(new Player("Katka", START_POSITION, config.getStartMoney(), true));
+        players.add(new Player("Andrea", START_POSITION, config.getStartMoney(), true));
 
         return players;
     }
@@ -83,23 +86,20 @@ public class GameFactory {
         tiles.add(new CardTile(5, "nahoda_5", randomEventsDeck));
 
         PropertyGroup firma2 = new PropertyGroup("Firma 2");
-        addPropertyGroup(tiles, firma2, 6, "policko_6", 100, 50);
-        addPropertyGroup(tiles, firma2, 7, "policko_7", 100, 50);
-        addPropertyGroup(tiles, firma2, 8, "policko_8", 100, 50);
+        addPropertyGroup(tiles, firma2, 6, "policko_6", 110, 70);
+        addPropertyGroup(tiles, firma2, 7, "policko_7", 110, 70);
+        addPropertyGroup(tiles, firma2, 8, "policko_8", 110, 70);
 
         tiles.add(new CardTile(9, "finance_9", financialTransactionsDeck));
 
         PropertyGroup firma3 = new PropertyGroup("Firma 3");
-        addPropertyGroup(tiles, firma3, 10, "policko_10", 100, 50);
-        addPropertyGroup(tiles, firma3, 11, "policko_11", 100, 50);
+        addPropertyGroup(tiles, firma3, 10, "policko_10", 150, 80);
+        addPropertyGroup(tiles, firma3, 11, "policko_11", 150, 80);
 
         tiles.add(new ServerTile(12, "Serverovna_12", 150, 20));
         tiles.add(new JailTile(13, "Vazanie_13"));
 
         tiles.add(new CardTile(14, "nahoda_14", randomEventsDeck));
-        //tiles.add(new CardTile(15, "nahoda_15", randomEventsDeck));
-        //tiles.add(new CardTile(16, "nahoda_16", randomEventsDeck));
-        //tiles.add(new CardTile(17, "nahoda_17", randomEventsDeck));
 
         return tiles;
     }
