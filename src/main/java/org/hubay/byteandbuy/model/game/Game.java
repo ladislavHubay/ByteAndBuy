@@ -76,24 +76,21 @@ public class Game {
     public void movePlayer(Player player, int steps, boolean applyStartBonus) {
         int oldPosition = player.getPosition();
         int newPosition = player.move(steps, getBoardSize());
-
-        boolean passedStart = newPosition < oldPosition;
-
-        if (passedStart && applyStartBonus) {
-            player.receive(gameConfig.getStartBonus());
-            eventCollector.add(player.getName() + " ziskal bonus za START");
-        }
+        applyStartBonusIfPassed(player, oldPosition, newPosition, applyStartBonus);
     }
 
     public void movePlayerTo(Player player, int position, boolean applyStartBonus) {
         int oldPosition = player.getPosition();
         int newPosition = player.moveTo(position);
+        applyStartBonusIfPassed(player, oldPosition, newPosition, applyStartBonus);
+    }
 
+    private void applyStartBonusIfPassed(Player player, int oldPosition, int newPosition, boolean applyStartBonus) {
         boolean passedStart = newPosition < oldPosition;
 
         if (passedStart && applyStartBonus) {
             player.receive(gameConfig.getStartBonus());
-            eventCollector.add(player.getName() + " ziskal bonus za START");
+            eventCollector.add(player.getName() + " ziskal " + gameConfig.getStartBonus() + " za START");
         }
     }
 }
