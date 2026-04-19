@@ -7,11 +7,15 @@ import org.hubay.byteandbuy.model.tiles.Tile;
 import org.hubay.byteandbuy.model.tiles.WorkshopTile;
 import org.springframework.stereotype.Service;
 
-// Riesi financne tranzakcie
+/**
+ * Trieda zodpoveda za financne operacie v hre.
+ */
 @Service
 public class EconomyService {
-    // Metoda sa vykona ked sa hrac rozhodne kupit policko.
-    // vykona kupu policka.
+    /**
+     * Vykona nakup policka na ktorom hrac stoji
+     * ak su splnene vsetky podmienky.
+     */
     public void buyProperty(Game game) {
         if (!game.isWaitingForDecision()) {
             throw new IllegalStateException("No decision expected");
@@ -30,7 +34,7 @@ public class EconomyService {
             player.pay(price);
             buyable.setOwner(player);
 
-            game.getEventCollector().add(player.getName() + " kúpil " + tile.getName() + " za " + price);
+            game.getEventCollector().add(player.getName() + " kupil " + tile.getName() + " za " + price);
         } else {
             game.getEventCollector().add("Nemas dost na ucte");
         }
@@ -38,7 +42,10 @@ public class EconomyService {
         game.resumePlaying();
     }
 
-    // Vypocita finalnu sumu ktoru hrac zaplati pri nakupe noveho PropertyTile (zlacnene ked hrac vlastni dielnu).
+    /**
+     * Vypocita finalnu cenu policka podla aktualnych bonusov pre hraca.
+     * (Napr. ak vlastni 'dielnu' ziskava zlavu definovanu v application.properties)
+     */
     private int calculateFinalPrice(Game game, Player player, Buyable tile) {
         double discount = 0;
         for (Tile t : game.getBoard().getTiles()) {

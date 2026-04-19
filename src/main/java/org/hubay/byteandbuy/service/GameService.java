@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Umoznuje vytvorenie noveh hry alebo ziskanie hry podla ID.
+ */
 @Getter
 @Service
 public class GameService {
@@ -19,12 +22,18 @@ public class GameService {
         this.gameFactory = gameFactory;
     }
 
+    /**
+     * Vytvori novu hru, ulozi do pamate a vrati ID vytvorenej hry.
+     */
     public String createGame() {
         String gameId = UUID.randomUUID().toString();
         games.put(gameId, gameFactory.createSampleGame());
         return gameId;
     }
 
+    /**
+     * Vrati hru podla ID.
+     */
     public Game getGame(String gameId) {
         Game game = games.get(gameId);
 

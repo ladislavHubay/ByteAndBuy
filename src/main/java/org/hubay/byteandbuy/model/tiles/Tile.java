@@ -4,12 +4,13 @@ import lombok.Getter;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
-// jedno policko na hracej doske. Spravanie policka urcuje trieda PropertyTile.
+/**
+ * Abstraktna tireda reprezentuje jedno policko na hracej doske.
+ * Implementaciu ma kazdy typ policka samostatne.
+ */
 @Getter
 public abstract class Tile {
-    // pozicia policka v List<Tile> tiles;
     private final int position;
-    // nazov policka(napr. "start", "nazov firmy", "finance", "nahoda", ...)
     private final String name;
 
     public Tile(int position, String name) {
@@ -17,6 +18,8 @@ public abstract class Tile {
         this.name = name;
     }
 
-    // Metoda urcuje interakciu - spravanie policka ked je na nom hrac.
+    /**
+     * Definuje spravanie policka. Vracia vysledok interakcie.
+     */
     public abstract TileResult interact(Game game, Player player);
 }

@@ -3,11 +3,12 @@ package org.hubay.byteandbuy.model.cards;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
-// Karticka obsahujuca financna akciu.
+/**
+ * Karta sposobuje fifnancu zmenu pre hraca.
+ * Moze sposobit financnu stratu alebo aj zisk.
+ */
 public class MoneyCard implements Card {
-    // Hodnota na karte
     private final int money;
-    // Popis karty
     private final String description;
 
     public MoneyCard(int money, String description) {
@@ -15,13 +16,18 @@ public class MoneyCard implements Card {
         this.description = description;
     }
 
-    // Metoda vykona financnu transakciu na ucte hraca podla karty.
+    /**
+     * Vykona financu transakciu hraca.
+     * Transakcia moze byt zisk alebo strata.
+     */
     @Override
     public void apply(Game game, Player player) {
         player.receive(money);
     }
 
-    // Vrati popis karty.
+    /**
+     * Textovy popis karty.
+     */
     @Override
     public String getDescription() {
         return description;

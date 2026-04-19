@@ -11,10 +11,12 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Inicializuje hracov, hernu dosku, balicky kariet.
+ */
 @Component
 public class GameFactory {
     private final GameConfig config;
-
     private static final int START_POSITION = 0;
     private static final int JAIL_POSITION = 13;
 
@@ -23,24 +25,19 @@ public class GameFactory {
     }
 
     public Game createSampleGame() {
-        // Hraci
         List<Player> players = createPlayers();
 
-        // Balicky kariet
         Deck randomDeck = createCardsWithRandomEvents();
         Deck financeDeck = createCardsWithFinancialTransactions();
 
-        // Tiles
         Tile startTile = new StartTile(START_POSITION, "START");
         List<Tile> tiles = createTiles(randomDeck, financeDeck, startTile);
 
-        // Hracia doska
         Board board = new Board(tiles, startTile);
 
         return new Game(config, players, board, START_POSITION);
     }
 
-    // Vytvori balicek kariet s nahodnymi efektami.
     private static Deck createCardsWithRandomEvents() {
         List<Card> randomEventCards = List.of(
                 new MoveStepsCard(3, "Posun sa o 3 policka dopredu"),
@@ -51,17 +48,15 @@ public class GameFactory {
         return new Deck(randomEventCards);
     }
 
-    // Vytvori balicek kariet s financnymi efektami.
     private static Deck createCardsWithFinancialTransactions() {
         List<Card> financialTransactionCards = List.of(
-                new MoneyCard(10, "Vyhral si v loterii 10"),
+                new MoneyCard(50, "Vyhral si v loterii 50"),
                 new MoneyCard(-50, "Zaplat pokutu 50")
         );
 
         return new Deck(financialTransactionCards);
     }
 
-    // Vytvori zoznam hracov.
     private List<Player> createPlayers() {
         List<Player> players = new ArrayList<>();
         players.add(new Player("Peter", START_POSITION, config.getStartMoney(), true));
@@ -71,7 +66,6 @@ public class GameFactory {
         return players;
     }
 
-    // Vytvory zoznam hracich policok.
     private List<Tile> createTiles(Deck randomEventsDeck, Deck financialTransactionsDeck, Tile startTile) {
         List<Tile> tiles = new ArrayList<>();
         tiles.add(startTile);
@@ -104,7 +98,6 @@ public class GameFactory {
         return tiles;
     }
 
-    // Helper pre createTiles() - pre vytvaranie policok.
     private void addPropertyGroup(List<Tile> tiles, PropertyGroup propertyGroup,
                                          int position, String name, int price, int rent) {
         PropertyTile propertyTile = new PropertyTile(position, name, price, rent, propertyGroup, config.getFullGroupRentMultiplier());

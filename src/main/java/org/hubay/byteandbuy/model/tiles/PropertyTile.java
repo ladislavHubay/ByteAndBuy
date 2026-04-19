@@ -5,15 +5,14 @@ import lombok.Getter;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
-// Urcuje spravanie konkretneho policka - iba policka s moznostou nakupu policka.
+/**
+ * Policko ktore je mozne vlastnit.
+ */
 public class PropertyTile extends AbstractOwnableTile{
-    // Skupina policok patriacich k sebe.
     @JsonBackReference
     private final PropertyGroup group;
-    // cena pri moznosti kupi policka (ak ho nevlastni iny hrac).
     @Getter
     private final int price;
-    // cena na zaplatenie najmu (ak toto policko vlastni iny hrac)
     private final int rent;
     private final double fullGroupRentMultiplier;
 
@@ -25,25 +24,34 @@ public class PropertyTile extends AbstractOwnableTile{
         this.fullGroupRentMultiplier = fullGroupRentMultiplier;
     }
 
+    /**
+     * Definuje spravanie policka.
+     * ak nema vlastnika -> hrac moze kupit
+     * ak je vlastnik iny hrac -> hrac plati najom
+     * vlastnik je aktualny hrac -> ziadna akcia
+     */
     @Override
     public TileResult interact(Game game, Player player) {
         if (getOwner() == null) {
-            game.getEventCollector().add(player.getName() + " môže kúpiť " + getName());
+            game.getEventCollector().add(player.getName() + " moze kupit " + getName());
             return TileResult.WAIT_FOR_DECISION;
         }
 
         if (getOwner() != player) {
             int payment = handleRentPayment(player);
 
-            game.getEventCollector().add(player.getName() + " zaplatil nájom " + payment + " hracovy " + getOwner().getName());
+            game.getEventCollector().add(player.getName() + " zaplatil majom: " + payment + " hracovy " + getOwner().getName());
             return TileResult.CONTINUE;
         }
 
-        game.getEventCollector().add(player.getName() + " je na vlastnom políčku");
+        game.getEventCollector().add(player.getName() + " je na vlastnom policku");
         return TileResult.CONTINUE;
     }
 
-    // pomocna metoda na riesenie platby prenajmu ak jeden hrac stoji na policku vlastnenom inym hracom.
+    /**
+     * Vykona platbu za najom.
+     * V pripade nedostatku na ucte hrac vlastnikovy plati len do vysky co na ucte ma.
+     */
     private int handleRentPayment(Player player) {
         int payment = Math.min(player.getMoney(), calculateRent());
 
@@ -53,7 +61,10 @@ public class PropertyTile extends AbstractOwnableTile{
         return payment;
     }
 
-    // Navysi rent v pripade ak hrac vlastni vsetko z GROUP.
+    /**
+     * Vypocita vysku najmu.
+     * Ak hrac vlastni vsetky policka zo skupiny, najom je vyssi.
+     */
     private int calculateRent() {
         if (group != null && group.ownsAll(getOwner())) {
             return (int)(rent * fullGroupRentMultiplier);

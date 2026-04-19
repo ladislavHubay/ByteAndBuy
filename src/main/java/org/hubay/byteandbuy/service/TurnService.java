@@ -4,6 +4,9 @@ import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 import org.springframework.stereotype.Service;
 
+/**
+ * Riesi riadenie priebehu tahov hracov.
+ */
 @Service
 public class TurnService {
     private final PlayerStateService playerStateService;
@@ -12,7 +15,10 @@ public class TurnService {
         this.playerStateService = playerStateService;
     }
 
-    // Zabespeci kontrolu ci je na tahu znovu aktualny hrac (napriklad hodil 6) alebo sa ukonci tah aktualneho hraca,
+    /**
+     * Ukonci tah aktualneho hraca. Ak hrac hodi 6, na tahu zostava rovnaky hrac.
+     * Inak posunie dalsieho hraca na tah.
+     */
     public void finishTurn(Game game) {
         Player player = game.getCurrentPlayer();
 
@@ -24,17 +30,23 @@ public class TurnService {
             game.getEventCollector().add(player.getName() + " ma na ucte: " + player.getMoney());
             moveToNextPlayer(game);
         } else {
-            game.getEventCollector().add(player.getName() + " hodil 6 → hrá znova");
+            game.getEventCollector().add(player.getName() + " hodil si 6. Hadzes znova");
         }
     }
 
+    /**
+     * Urcuje ci sa ma tah hraca ukoncit.
+     * (hrac hodil ine ako 6, hrac je vo vazani, hrac je vyradeny z hry - nastaveny ako neaktivny)
+     */
     public boolean shouldEndTurn(Game game, Player player) {
         return game.getLastDice() != 6
                 || player.isInJail()
                 || !player.isInGame();
     }
 
-    // ukonci tah hraca a posunie tah na dalsieho hraca.
+    /**
+     * Presunie hru na dalsieho aktivneho hraca v poradi.
+     */
     public void moveToNextPlayer(Game game) {
         playerStateService.checkGameFinished(game);
 

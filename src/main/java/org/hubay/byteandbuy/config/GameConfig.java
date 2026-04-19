@@ -2,6 +2,9 @@ package org.hubay.byteandbuy.config;
 
 import lombok.Getter;
 
+/**
+ * Obsahuje hodnoty nacitane z application.properties.
+ */
 @Getter
 public class GameConfig {
     private final int startBonus;

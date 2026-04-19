@@ -3,11 +3,16 @@ package org.hubay.byteandbuy.model.cards;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
-// jedna karta (je jedno ci nahoda/finance)
+/**
+ * Reprezentuje kratu z balicka.
+ */
 public interface Card {
-    // vykona udalost na karte.
+    /**
+     * Vykona efekt karty.
+     */
     void apply(Game game, Player player);
-
-    // popis karty
+    /**
+     * Textovy popis karty.
+     */
     String getDescription();
 }

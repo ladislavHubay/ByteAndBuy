@@ -5,12 +5,12 @@ import org.hubay.byteandbuy.model.tiles.Tile;
 
 import java.util.List;
 
-// Hracia doska (zatial len policka).
+/**
+ * Hracia doska. Obsahuje zoznam vsetkych policok.
+ */
 @Getter
 public class Board {
-    // zoznam hracich policok.
     private final List<Tile> tiles;
-    // policko start
     private final Tile startTile;
 
     public Board(List<Tile> tiles, Tile startTile) {

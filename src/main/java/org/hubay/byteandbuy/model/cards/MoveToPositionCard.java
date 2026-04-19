@@ -3,11 +3,11 @@ package org.hubay.byteandbuy.model.cards;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
-// Karticka obsahujuca posun hraca na konkretne policko.
+/**
+ * Karta presunie hraca na dane policko na hracej doske.
+ */
 public class MoveToPositionCard implements Card {
-    // pozicia kam sa ma hrac posunut.
     private final int position;
-    // Popis na karte.
     private final String description;
 
     public MoveToPositionCard(int position, String description) {
@@ -15,13 +15,18 @@ public class MoveToPositionCard implements Card {
         this.description = description;
     }
 
-    // Vykona presun hraca na danu poziciu na hracej doske.
+    /**
+     * Presunie hraca na konkretnu poziciu na hracej doske.
+     * Pri presune na START je aktivovany bonus za START.
+     */
     @Override
     public void apply(Game game, Player player) {
         game.movePlayerTo(player, position, true);
     }
 
-    // Popis na karte.
+    /**
+     * Textovy popis karty.
+     */
     @Override
     public String getDescription() {
         return description;

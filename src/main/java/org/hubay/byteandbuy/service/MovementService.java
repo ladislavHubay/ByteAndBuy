@@ -4,10 +4,14 @@ import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 import org.springframework.stereotype.Service;
 
-// Riesi pohyb hraca
+/**
+ * Spracuje pohyb hraca.
+ */
 @Service
 public class MovementService {
-    // Posunie hraca podla hodu kockou na nove hracie policko.
+    /**
+     *  Deleguje vykonanie pohybu hraca na triedu Game
+     */
     public void movePlayer(Game game, Player player, int steps) {
         game.movePlayer(player, steps, true);
     }

@@ -5,7 +5,9 @@ import org.hubay.byteandbuy.model.cards.Deck;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
-// Urcuje spravanie konkretneho policka - iba policka kde sa tahaju karty.
+/**
+ * Policko urcene na tahanie karty.
+ */
 public class CardTile extends Tile{
     private final Deck deck;
 
@@ -14,13 +16,14 @@ public class CardTile extends Tile{
         this.deck = deck;
     }
 
-    // implementuje spravanie policka ked na nom stoji hrac.
+    /**
+     * Hrac vytiahne kartu z balicka a vykona sa efekt na karte.
+     * Moze menit stav hraca alebo hry.
+     */
     @Override
     public TileResult interact(Game game, Player player) {
         Card card = deck.draw();
-
-        game.getEventCollector().add(player.getName() + " ťahá kartu: " + card.getDescription());
-
+        game.getEventCollector().add(player.getName() + " taha kartu: " + card.getDescription());
         card.apply(game, player);
 
         return TileResult.CONTINUE;

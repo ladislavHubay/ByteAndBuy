@@ -10,23 +10,19 @@ import org.hubay.byteandbuy.model.tiles.Tile;
 
 import java.util.List;
 
-// konkrétna bežiaca hra v danom momente.
+/**
+ * Reprezentuje aktualny stav prebiehajucej hry.
+ */
 @Getter
 public class Game {
     @Setter
     private transient GameEventCollector eventCollector;
-    // Pravidla hry (bonus za start, multyplikatory,....)
     private final GameConfig gameConfig;
-    // zoznam hracov - indexy 0 az N urcuje poradie hracaov.
     private final List<Player> players;
-    // hracia doska.
     private final Board board;
-    // je to index do List<Player> players, ktorý určuje aktuálneho hráča
     @Setter
     private int currentPlayerIndex;
-    // hod kockou
     private int lastDice;
-    // Stav hraca
     private GameState state;
 
     public Game(GameConfig gameConfig, List<Player> players, Board board, int currentPlayerIndex) {
@@ -37,54 +33,101 @@ public class Game {
         this.state = GameState.PLAYING;
     }
 
+    /**
+     * Vrati hraca, ktory je prave na tahu.
+     */
     public Player getCurrentPlayer() {
         return players.get(currentPlayerIndex);
     }
 
+    /**
+     * Nastavi hodnotu posledneho hodu kockou.
+     */
     public void setDice(int dice) {
         this.lastDice = dice;
     }
 
+    /**
+     * Vrati stav hry - cakanie na rozhodnutie.
+     * Moze ist napriklad o situaciu ak je hrac na policku ktore je mozne kupit
+     * a hra caka na rozhodnutie hraca ci policko kupi alebo nie.
+     */
     public boolean isWaitingForDecision() {
         return state == GameState.WAITING_FOR_DECISION;
     }
 
+    /**
+     * Vrati stav hry - hra sa skoncila.
+     * Napriklad ak v hre ostal iba jeden (posledny) hrac.
+     */
     public boolean isFinished() {
         return state == GameState.FINISHED;
     }
 
+    /**
+     * Nastavy stav hry - cakanie na rozhodnutie.
+     * Moze ist napriklad o situaciu ak je hrac na policku ktore je mozne kupit
+     * a hra caka na rozhodnutie hraca ci policko kupi alebo nie.
+     */
     public void waitForDecision() {
         this.state = GameState.WAITING_FOR_DECISION;
     }
 
+    /**
+     * Nastavy stav hry - pokracovat v hre.
+     * Napriklad po rozhodnuti hraca kupit alebo nekupit policko hra moze pokracovat dalej.
+     */
     public void resumePlaying() {
         this.state = GameState.PLAYING;
     }
 
+    /**
+     * Nastavy stav hry - hra skoncila.
+     * Napriklad ak v hre ostal iba jeden (posledny) hrac.
+     */
     public void finishGame() {
         this.state = GameState.FINISHED;
     }
 
+    /**
+     * Vrati policko na ktorom prave stoji hrac.
+     */
     public Tile getCurrentTile(Player player) {
         return board.getTiles().get(player.getPosition());
     }
 
+    /**
+     * Vrati pocet policok na hracej doske.
+     */
     public int getBoardSize() {
         return board.getTiles().size();
     }
 
+    /**
+     * Posunie hraca o urcity pocet krokov.
+     * Hrcovy pripise bonus na ucet za START pokial su splnene podmienky.
+     */
     public void movePlayer(Player player, int steps, boolean applyStartBonus) {
         int oldPosition = player.getPosition();
         int newPosition = player.move(steps, getBoardSize());
         applyStartBonusIfPassed(player, oldPosition, newPosition, applyStartBonus);
     }
 
+    /**
+     * Posunie hraca na konkretne policko.
+     * Hrcovy pripise bonus na ucet za START pokial su splnene podmienky.
+     */
     public void movePlayerTo(Player player, int position, boolean applyStartBonus) {
         int oldPosition = player.getPosition();
         int newPosition = player.moveTo(position);
         applyStartBonusIfPassed(player, oldPosition, newPosition, applyStartBonus);
     }
 
+    /**
+     * Kontroluje ci hrac presiel cez START alebo sa postavil na policko START.
+     * V pripade naroku na bonus podla pravidiel,
+     * tento bonus za START pripise na ucet hraca.
+     */
     private void applyStartBonusIfPassed(Player player, int oldPosition, int newPosition, boolean applyStartBonus) {
         boolean passedStart = newPosition < oldPosition;
 

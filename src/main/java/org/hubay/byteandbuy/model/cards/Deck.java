@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// Balicek kariet
+/**
+ * Reprezentuje balicek kariet.
+ */
 public class Deck {
-    // Balicek - zoznam obsahujuca karty.
     private final List<Card> cards;
-    // Index karty v balicku - zozname.
     private int currentIndex = 0;
 
     public Deck(List<Card> cards) {
@@ -16,8 +16,10 @@ public class Deck {
         shuffle();
     }
 
-    // Metoda sa stara o balicek kariet a vrati potiahnutu kartu.
-    // (taha karty v poradi, pri potiahnuti vsetkych kariet zamiesa balicek)
+    /**
+     * Potiahne kartu. Po vystriedani vsetkych kariet sa balicek zamiesa
+     * a taha sa znovu z pomiesaneho balicka.
+     */
     public Card draw() {
         if (currentIndex >= cards.size()) {
             shuffle();
@@ -27,7 +29,9 @@ public class Deck {
         return cards.get(currentIndex++);
     }
 
-    // zamiesa karty (zamiesa poradie prvkov v zozname)
+    /**
+     * Premiesa poradie kariet.
+     */
     private void shuffle() {
         Collections.shuffle(cards);
     }

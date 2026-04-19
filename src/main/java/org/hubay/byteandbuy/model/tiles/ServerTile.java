@@ -4,11 +4,13 @@ import lombok.Getter;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 
+/**
+ * Policko ktore je mozne kupit a vlastnit.
+ * Hrac ktory stoji na tomto policku plati najom vlastnikovy podla poctu vlastnych policok.
+ */
 public class ServerTile extends AbstractOwnableTile{
-    // Cena za nakup policka
     @Getter
     private final int price;
-    // Suma za platbu ak hrac zastavi na policku
     private final int rent;
 
     public ServerTile(int position, String name, int price, int baseRent) {
@@ -17,7 +19,12 @@ public class ServerTile extends AbstractOwnableTile{
         this.rent = baseRent;
     }
 
-    // metoda implementuje spravanie konkretneho policka.
+    /**
+     * Definuje spravanie policka.
+     * Policko nema vlastnika -> hrac policko moze kupit
+     * Policko ma vlastnika -> hrac plati vlastnikovy podla toho kolko policok sam vlastni
+     * vlastnikom je hrac ktory na policku stoji -> bez akcie
+     */
     @Override
     public TileResult interact(Game game, Player player) {
         if (getOwner() == null) {
@@ -27,9 +34,9 @@ public class ServerTile extends AbstractOwnableTile{
         }
 
         if (getOwner() == player) {
-            game.getEventCollector().add("Stojíš na vlastnom serveri");
+            game.getEventCollector().add("Stojis na vlastnom serveri");
 
-            return TileResult.WAIT_FOR_DECISION;
+            return TileResult.CONTINUE;
         }
 
         int propertyCount = countPlayerProperties(player, game);
@@ -39,12 +46,15 @@ public class ServerTile extends AbstractOwnableTile{
         getOwner().receive(totalRent);
 
         game.getEventCollector().add(player.getName() + " zaplatil " + totalRent +
-                " za pouzitie serverovne hráčovi " + getOwner().getName());
+                " za pouzitie serverovne hracovi " + getOwner().getName());
 
         return TileResult.CONTINUE;
     }
 
-    // Metoda spocita pocet policok (propertyTile) ktore vlastni hrac.
+    /**
+     * Spocita pocet policok ktore hrac vlastni.
+     * Pouziva sa na vypocet poplatku.
+     */
     private int countPlayerProperties(Player player, Game game) {
         int count = 0;
 

@@ -6,6 +6,9 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Obsahuje informacie potrebne pre frontend.
+ */
 @Getter
 public class TurnResponse {
     @Setter
@@ -24,8 +27,6 @@ public class TurnResponse {
     private boolean extraTurn;
     @Setter
     private String nextPlayer;
-    @Setter
-    private boolean waitingForDecision;
     @Setter
     private List<String> events = new ArrayList<>();
 }

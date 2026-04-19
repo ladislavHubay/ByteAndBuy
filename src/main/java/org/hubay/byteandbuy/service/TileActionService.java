@@ -7,7 +7,9 @@ import org.hubay.byteandbuy.model.tiles.Tile;
 import org.hubay.byteandbuy.model.tiles.TileResult;
 import org.springframework.stereotype.Service;
 
-// Riesi efekti na policku (co sa ma stat ak hrac stoji na danom policku)
+/**
+ * Vyhodnocuje efekty policok.
+ */
 @Service
 public class TileActionService {
     private final PlayerStateService playerStateService;
@@ -16,8 +18,10 @@ public class TileActionService {
         this.playerStateService = playerStateService;
     }
 
-    // Vykona efekt policka aj ked sa hrac posunie (napriklad kvoli potiahnutej karte).
-    // Opakuje az do dovtedy kym nezisti ze sa po vykonani policka hrac nepohol z miesta.
+    /**
+     * Vyhodnocuje efekt policka na ktorom hrac stoji.
+     * Podporuje retazenie efektov (policko -> tahanie karty -> posun na dalsie policko...)
+     */
     public void resolveTileEffects(Game game, Player player) {
         int previousPosition;
 
@@ -39,6 +43,9 @@ public class TileActionService {
         } while (player.getPosition() != previousPosition);
     }
 
+    /**
+     * Aplikuje efekt konkretneho policka.
+     */
     private TileResult applyTileEffect(Game game, Player player) {
         Tile tile = game.getCurrentTile(player);
 

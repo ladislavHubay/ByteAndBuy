@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Random;
 
+/**
+ * Pouziva sa na generovanie nahodnych cisel.
+ */
 @Configuration
 public class RandomConfig {
     @Bean

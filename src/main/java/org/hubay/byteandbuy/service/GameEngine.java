@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
-// Herna logika.
+/**
+ * Trieda orchestruje priebeh tahu hraca.
+ */
 @Service
 public class GameEngine {
     private final Random random;
@@ -30,26 +32,30 @@ public class GameEngine {
         this.jailService = jailService;
     }
 
-    // metoda simuluje hod kockou.
+    /**
+     * Vygeneruje nahodne cislo 1 az 6. Simuluje hod kockou.
+     */
     public int rollDice(){
         return random.nextInt(6) + 1;
     }
 
-    // Metoda riadi (Orchestruje) cely tah hraca.
+    /**
+     * Vykona jeden tah aktualneho hraca.
+     * Vrati vysledok vo forme TurnResponse.
+     */
     public TurnResponse playTurn(Game game) {
         GameEventCollector collector = new GameEventCollector();
         game.setEventCollector(collector);
 
         Player player = game.getCurrentPlayer();
-
         TurnResponse response = new TurnResponse();
 
         response.setCurrentPlayer(player.getName());
         response.setFromPosition(player.getPosition());
 
-        collector.add(player.getName() + " je na pozícii " +
+        collector.add(player.getName() + " je na pozicii " +
                 game.getCurrentTile(player).getName() +
-                ", má: " + player.getMoney());
+                ", ma: " + player.getMoney());
 
         int dice = rollDice();
         game.setDice(dice);
@@ -73,20 +79,20 @@ public class GameEngine {
 
         response.setMoney(player.getMoney());
 
-        boolean extraTurn = turnService.shouldEndTurn(game, player);
-        response.setExtraTurn(extraTurn);
+        boolean shouldEndTurn = turnService.shouldEndTurn(game, player);
+        response.setExtraTurn(shouldEndTurn);
 
         turnService.finishTurn(game);
 
         response.setNextPlayer(game.getCurrentPlayer().getName());
-
         response.setEvents(collector.getEvents());
 
         return response;
     }
 
-    // Metoda sa vykona ked sa hrac rozhodne kupit policko.
-    // vykona kupu policka.
+    /**
+     * Spracuje rozhodnutie hraca kupit policko.
+     */
     public TurnResponse buyProperty(Game game) {
         GameEventCollector collector = new GameEventCollector();
         game.setEventCollector(collector);
@@ -111,8 +117,9 @@ public class GameEngine {
         return response;
     }
 
-    // Metoda sa vykona v pripade ak hrac sa rozhodne NEkupit policko.
-    // Posunie hru dalej bez toho aby hrac kupil policko.
+    /**
+     * Spracuje rozhodnutie hraca nekupit policko.
+     */
     public TurnResponse skipPurchase(Game game) {
         GameEventCollector collector = new GameEventCollector();
         game.setEventCollector(collector);
@@ -126,7 +133,7 @@ public class GameEngine {
         TurnResponse response = new TurnResponse();
         response.setCurrentPlayer(player.getName());
 
-        collector.add(player.getName() + " nekúpil políčko");
+        collector.add(player.getName() + " nekupil policko");
 
         game.resumePlaying();
 
@@ -138,7 +145,10 @@ public class GameEngine {
         return response;
     }
 
-    // Ukonci hru pre daneho hraca.
+    /**
+     * Spracuje rozhodnutie hraca odist z hry.
+     * Hra pokracuje pokial v hre zostavaju minimalne dvaja hraci.
+     */
     public void leaveGame(Game game) {
         Player player = game.getCurrentPlayer();
 

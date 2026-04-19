@@ -7,11 +7,13 @@ import org.hubay.byteandbuy.model.player.Player;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Reprezentuje skupinu policok.
+ * Ak hrac vlastni celu skupinu ziskava vyhody.
+ */
 public class PropertyGroup {
-    // Nazov firmy (GROUP)
     @Getter
     private final String name;
-    // Zoznam policok patriacich do GROUP.
     @JsonManagedReference
     @Getter
     private final List<PropertyTile> properties;
@@ -21,12 +23,19 @@ public class PropertyGroup {
         this.properties = new ArrayList<>();
     }
 
-    // Na zaciatku prida kazde policko do GROUP.
+    /**
+     * Prida policko do skupiny. Aplikuje sa pri vytvarani hry.
+     */
     public void addProperty(PropertyTile property) {
         properties.add(property);
     }
 
-    // Skontroluje ci hrac vlastni vsetky policka z GROUP
+    /**
+     * Skontroluje ci hrac vlastni vsetky policka zo skupiny.
+     * Pouziva sa na urcenie popaltku na policku.
+     * @param player Hrac ktoreho vlastnictvo sa kontroluje.
+     * @return true ak vlastni vsetky policka zo skupiny, false ak nie.
+     */
     public boolean ownsAll(Player player) {
         for (PropertyTile property : properties) {
             if (property.getOwner() != player) {

@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Nacita hodnoty z application.properties.
+ */
 @Configuration
 public class GameConfiguration {
     @Value("${game.startBonus}")
