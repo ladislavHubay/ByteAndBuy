@@ -26,29 +26,19 @@ public class ServerTile extends AbstractOwnableTile{
      * vlastnikom je hrac ktory na policku stoji -> bez akcie
      */
     @Override
-    public TileResult interact(Game game, Player player) {
+    public TileActionType interact(Game game, Player player) {
         if (getOwner() == null) {
-            game.getEventCollector().add("Server je na predaj");
-
-            return TileResult.WAIT_FOR_DECISION;
+            return new TileActionType(TileResult.WAIT_FOR_PURCHASE, price, rent, getOwner(), null);
         }
 
-        if (getOwner() == player) {
-            game.getEventCollector().add("Stojis na vlastnom serveri");
+        if (getOwner() != player) {
+            int propertyCount = countPlayerProperties(player, game);
+            int totalRent = rent * propertyCount;
 
-            return TileResult.CONTINUE;
+            return new TileActionType(TileResult.PAY_RENT, price, totalRent, getOwner(), null);
         }
 
-        int propertyCount = countPlayerProperties(player, game);
-        int totalRent = rent * propertyCount;
-
-        player.pay(totalRent);
-        getOwner().receive(totalRent);
-
-        game.getEventCollector().add(player.getName() + " zaplatil " + totalRent +
-                " za pouzitie serverovne hracovi " + getOwner().getName());
-
-        return TileResult.CONTINUE;
+        return new TileActionType(TileResult.NOTHING, price, rent, getOwner(), null);
     }
 
     /**

@@ -21,5 +21,5 @@ public abstract class Tile {
     /**
      * Definuje spravanie policka. Vracia vysledok interakcie.
      */
-    public abstract TileResult interact(Game game, Player player);
+    public abstract TileActionType interact(Game game, Player player);
 }

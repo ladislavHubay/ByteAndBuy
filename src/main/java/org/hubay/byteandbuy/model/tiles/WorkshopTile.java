@@ -22,13 +22,11 @@ public class WorkshopTile extends AbstractOwnableTile{
      * Majitel policka ziskava vyhodu (zlavu) pri nakupe dalsich policok.
      */
     @Override
-    public TileResult interact(Game game, Player player) {
+    public TileActionType interact(Game game, Player player) {
         if (getOwner() == null) {
-            game.getEventCollector().add("Mozes kupit dielnu");
-            return TileResult.WAIT_FOR_DECISION;
+            return new TileActionType(TileResult.WAIT_FOR_PURCHASE, price, null, getOwner(), null);
         }
 
-        game.getEventCollector().add(player.getName() + " je na dielni. Vlastni ho " + getOwner().getName());
-        return TileResult.CONTINUE;
+        return new TileActionType(TileResult.NOTHING, price, null, getOwner(), null);
     }
 }

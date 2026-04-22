@@ -27,8 +27,8 @@ public class TurnService {
         }
 
         if (shouldEndTurn(game, player)) {
-            game.getEventCollector().add(player.getName() + " ma na ucte: " + player.getMoney());
             moveToNextPlayer(game);
+            game.getEventCollector().add("Nasleduje hrac: " + game.getCurrentPlayer().getName());
         } else {
             game.getEventCollector().add(player.getName() + " hodil si 6. Hadzes znova");
         }

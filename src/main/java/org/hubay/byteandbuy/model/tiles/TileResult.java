@@ -5,6 +5,8 @@ package org.hubay.byteandbuy.model.tiles;
  * Urcuje ci hra pokracuje automaticky alebo sa caka na rozhodnutie hraca.
  */
 public enum TileResult {
-    CONTINUE,
-    WAIT_FOR_DECISION
+    NOTHING,
+    DRAW_CARD,
+    WAIT_FOR_PURCHASE,
+    PAY_RENT
 }

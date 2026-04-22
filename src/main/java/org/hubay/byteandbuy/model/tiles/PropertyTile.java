@@ -31,21 +31,19 @@ public class PropertyTile extends AbstractOwnableTile{
      * vlastnik je aktualny hrac -> ziadna akcia
      */
     @Override
-    public TileResult interact(Game game, Player player) {
+    public TileActionType interact(Game game, Player player) {
+        int payment = rent;
+
         if (getOwner() == null) {
-            game.getEventCollector().add(player.getName() + " moze kupit " + getName());
-            return TileResult.WAIT_FOR_DECISION;
+            return new TileActionType(TileResult.WAIT_FOR_PURCHASE, price, payment, getOwner(), null);
         }
 
         if (getOwner() != player) {
-            int payment = handleRentPayment(player);
-
-            game.getEventCollector().add(player.getName() + " zaplatil majom: " + payment + " hracovy " + getOwner().getName());
-            return TileResult.CONTINUE;
+            payment = handleRentPayment(player);
+            return new TileActionType(TileResult.PAY_RENT, price, payment, getOwner(), null);
         }
 
-        game.getEventCollector().add(player.getName() + " je na vlastnom policku");
-        return TileResult.CONTINUE;
+        return new TileActionType(TileResult.NOTHING, price, payment, getOwner(), null);
     }
 
     /**
@@ -53,12 +51,7 @@ public class PropertyTile extends AbstractOwnableTile{
      * V pripade nedostatku na ucte hrac vlastnikovy plati len do vysky co na ucte ma.
      */
     private int handleRentPayment(Player player) {
-        int payment = Math.min(player.getMoney(), calculateRent());
-
-        player.pay(payment);
-        getOwner().receive(payment);
-
-        return payment;
+        return Math.min(player.getMoney(), calculateRent());
     }
 
     /**

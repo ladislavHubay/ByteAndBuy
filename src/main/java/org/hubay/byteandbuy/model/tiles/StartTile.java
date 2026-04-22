@@ -15,7 +15,7 @@ public class StartTile extends Tile {
      * Policko sam o sebe nevykonva ziadnu akciu.
      */
     @Override
-    public TileResult interact(Game game, Player player) {
-        return TileResult.CONTINUE;
+    public TileActionType interact(Game game, Player player) {
+        return new TileActionType(TileResult.NOTHING, null, null, null, null);
     }
 }

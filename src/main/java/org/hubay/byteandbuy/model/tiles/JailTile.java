@@ -17,7 +17,7 @@ public class JailTile extends Tile {
      * na tejto pozicii podla hernych pravidiel pri potiahnuti karty.
      */
     @Override
-    public TileResult interact(Game game, Player player) {
-        return TileResult.CONTINUE;
+    public TileActionType interact(Game game, Player player) {
+        return new TileActionType(TileResult.NOTHING, null, null, null, null);
     }
 }

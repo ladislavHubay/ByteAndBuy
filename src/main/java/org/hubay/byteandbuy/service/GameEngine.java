@@ -32,26 +32,16 @@ public class GameEngine {
         this.jailService = jailService;
     }
 
-    /**
-     * Vygeneruje nahodne cislo 1 az 6. Simuluje hod kockou.
-     */
-    public int rollDice(){
-        return random.nextInt(6) + 1;
-    }
-
-    /**
-     * Vykona jeden tah aktualneho hraca.
-     * Vrati vysledok vo forme TurnResponse.
-     */
-    public TurnResponse playTurn(Game game) {
+    public TurnResponse roll(Game game) {
         GameEventCollector collector = new GameEventCollector();
         game.setEventCollector(collector);
 
-        Player player = game.getCurrentPlayer();
         TurnResponse response = new TurnResponse();
 
+        Player player = game.getCurrentPlayer();
         response.setCurrentPlayer(player.getName());
         response.setFromPosition(player.getPosition());
+        response.setMoney(player.getMoney());
 
         collector.add(player.getName() + " je na pozicii " +
                 game.getCurrentTile(player).getName() +
@@ -59,10 +49,9 @@ public class GameEngine {
 
         int dice = rollDice();
         game.setDice(dice);
-
         response.setDice(dice);
 
-        collector.add(player.getName() + " hodil " + dice);
+        collector.add("Hodil si: " + dice);
 
         if (jailService.handleJailTurn(game, player, dice)) {
             turnService.finishTurn(game);
@@ -75,19 +64,25 @@ public class GameEngine {
         response.setToPosition(player.getPosition());
         response.setTileName(game.getCurrentTile(player).getName());
 
-        tileActionService.resolveTileEffects(game, player);
+        collector.add(player.getName() + " sa posunul na " + game.getCurrentTile(player).getName());
 
-        response.setMoney(player.getMoney());
+        tileActionService.resolveTileEffects(game, player);
 
         boolean shouldEndTurn = turnService.shouldEndTurn(game, player);
         response.setExtraTurn(shouldEndTurn);
 
         turnService.finishTurn(game);
 
-        response.setNextPlayer(game.getCurrentPlayer().getName());
         response.setEvents(collector.getEvents());
 
         return response;
+    }
+
+    /**
+     * Vygeneruje nahodne cislo 1 az 6. Simuluje hod kockou.
+     */
+    public int rollDice(){
+        return random.nextInt(6) + 1;
     }
 
     /**
@@ -108,6 +103,8 @@ public class GameEngine {
 
         int moneyAfter = player.getMoney();
         response.setMoney(moneyAfter);
+
+        game.resumePlaying();
 
         turnService.finishTurn(game);
 
@@ -160,5 +157,21 @@ public class GameEngine {
         if (game.isFinished()) {
             turnService.moveToNextPlayer(game);
         }
+    }
+
+    public TurnResponse drawCard(Game game) {
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
+
+        TurnResponse response = new TurnResponse();
+
+        tileActionService.drawCard(game);
+
+        response.setEvents(collector.getEvents());
+
+        turnService.finishTurn(game);
+        response.setNextPlayer(game.getCurrentPlayer().getName());
+
+        return response;
     }
 }

@@ -1,6 +1,5 @@
 package org.hubay.byteandbuy.model.tiles;
 
-import org.hubay.byteandbuy.model.cards.Card;
 import org.hubay.byteandbuy.model.cards.Deck;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
@@ -21,11 +20,7 @@ public class CardTile extends Tile{
      * Moze menit stav hraca alebo hry.
      */
     @Override
-    public TileResult interact(Game game, Player player) {
-        Card card = deck.draw();
-        game.getEventCollector().add(player.getName() + " taha kartu: " + card.getDescription());
-        card.apply(game, player);
-
-        return TileResult.CONTINUE;
+    public TileActionType interact(Game game, Player player) {
+        return new TileActionType(TileResult.DRAW_CARD, null, null, null, deck);
     }
 }

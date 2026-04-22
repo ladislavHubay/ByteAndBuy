@@ -1,10 +1,11 @@
 package org.hubay.byteandbuy.service;
 
+import org.hubay.byteandbuy.dto.TurnResponse;
+import org.hubay.byteandbuy.model.cards.Card;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
-import org.hubay.byteandbuy.model.tiles.PropertyTile;
 import org.hubay.byteandbuy.model.tiles.Tile;
-import org.hubay.byteandbuy.model.tiles.TileResult;
+import org.hubay.byteandbuy.model.tiles.TileActionType;
 import org.springframework.stereotype.Service;
 
 /**
@@ -22,40 +23,49 @@ public class TileActionService {
      * Vyhodnocuje efekt policka na ktorom hrac stoji.
      * Podporuje retazenie efektov (policko -> tahanie karty -> posun na dalsie policko...)
      */
-    public void resolveTileEffects(Game game, Player player) {
-        int previousPosition;
+    public void resolveTileEffects(Game game, Player player){
+        TurnResponse response = new TurnResponse();
 
-        do {
-            previousPosition = player.getPosition();
+        Tile tile = game.getCurrentTile(player);
 
-            TileResult result = applyTileEffect(game, player);
+        TileActionType result = tile.interact(game, player);
 
-            if (TileResult.WAIT_FOR_DECISION == result) {
+        switch (result.getType()){
+            case WAIT_FOR_PURCHASE -> {
+                game.getEventCollector().add(player.getName() + " moze kupit " + tile.getName());
+                game.waitForDecision();
+            }
+            case PAY_RENT -> {
+                game.getEventCollector().add(player.getName() + " plati najom " + result.getRent() + " pre " + result.getOwner().getName());
+                result.getOwner().receive(result.getRent());
+                response.setMoney(result.getOwner().getMoney());
+
+                player.pay(result.getRent());
+                response.setMoney(player.getMoney());
+                game.getEventCollector().add(player.getName() + " zostalo na ucte " + player.getMoney());
+                playerStateService.checkBankruptcy(game, player);
+            }
+
+            case DRAW_CARD -> {
+                game.getEventCollector().add(player.getName() + " potiahni si kartu");
                 game.waitForDecision();
             }
 
-            playerStateService.checkBankruptcy(game, player);
-
-            if (game.isWaitingForDecision()) {
-                break;
+            case NOTHING -> {
+                game.getEventCollector().add(player.getName() + " nic nerobi");
             }
-
-        } while (player.getPosition() != previousPosition);
+        }
     }
 
-    /**
-     * Aplikuje efekt konkretneho policka.
-     */
-    private TileResult applyTileEffect(Game game, Player player) {
+    public void drawCard(Game game){
+        Player player = game.getCurrentPlayer();
         Tile tile = game.getCurrentTile(player);
 
-        if (tile instanceof PropertyTile property && property.getOwner() != null) {
-            game.getEventCollector().add(player.getName() + " sa posunul na " +
-                    tile.getName() + " vlastni ho " + property.getOwner().getName());
-        } else {
-            game.getEventCollector().add(player.getName() + " sa posunul na " + tile.getName());
-        }
+        TileActionType result = tile.interact(game, player);
 
-        return tile.interact(game, player);
+        Card card = result.getDeck().draw();
+        game.getEventCollector().add(player.getName() + " potiahol kartu " + card.getDescription());
+        card.apply(game, player);
+        playerStateService.checkBankruptcy(game, player);
     }
 }

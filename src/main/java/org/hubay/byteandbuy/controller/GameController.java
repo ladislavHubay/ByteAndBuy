@@ -20,12 +20,6 @@ public class GameController {
         this.gameService = gameService;
     }
 
-    @PostMapping("/{gameId}/turn")
-    public TurnResponse playTurn(@PathVariable String gameId) {
-        Game game = gameService.getGame(gameId);
-        return engine.playTurn(game);
-    }
-
     @PostMapping("/{gameId}/buy")
     public TurnResponse buyProperty(@PathVariable String gameId) {
         Game game = gameService.getGame(gameId);
@@ -53,5 +47,17 @@ public class GameController {
     @PostMapping("/create")
     public String createGame() {
         return gameService.createGame();
+    }
+
+    @PostMapping("/{gameId}/roll")
+    public TurnResponse roll(@PathVariable String gameId) {
+        Game game = gameService.getGame(gameId);
+        return engine.roll(game);
+    }
+
+    @PostMapping("/{gameId}/draw")
+    public TurnResponse drawCard(@PathVariable String gameId) {
+        Game game = gameService.getGame(gameId);
+        return engine.drawCard(game);
     }
 }
