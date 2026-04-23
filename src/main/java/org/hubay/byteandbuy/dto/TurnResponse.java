@@ -19,7 +19,6 @@ public class TurnResponse {
     private int toPosition;
     private String tileName;
     private int money;
-    private boolean extraTurn;
     private String nextPlayer;
     private List<String> events = new ArrayList<>();
     private TileResult action;

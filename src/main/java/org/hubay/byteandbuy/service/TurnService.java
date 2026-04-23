@@ -39,9 +39,7 @@ public class TurnService {
      * (hrac hodil ine ako 6, hrac je vo vazani, hrac je vyradeny z hry - nastaveny ako neaktivny)
      */
     public boolean shouldEndTurn(Game game, Player player) {
-        return game.getLastDice() != 6
-                || player.isInJail()
-                || !player.isInGame();
+        return game.getLastDice() != 6 || player.isInJail() || !player.isInGame();
     }
 
     /**

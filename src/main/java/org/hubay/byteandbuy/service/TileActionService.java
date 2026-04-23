@@ -47,13 +47,11 @@ public class TileActionService {
             }
 
             case DRAW_CARD -> {
-                game.getEventCollector().add(player.getName() + " potiahni si kartu");
                 game.waitForDecision();
+                game.getEventCollector().add(player.getName() + " potiahni si kartu");
             }
 
-            case NOTHING -> {
-                game.getEventCollector().add(player.getName() + " nic nerobi");
-            }
+            case NOTHING -> {}
         }
     }
 
@@ -66,6 +64,8 @@ public class TileActionService {
         Card card = result.getDeck().draw();
         game.getEventCollector().add(player.getName() + " potiahol kartu " + card.getDescription());
         card.apply(game, player);
+
         playerStateService.checkBankruptcy(game, player);
+        game.resumePlaying();
     }
 }

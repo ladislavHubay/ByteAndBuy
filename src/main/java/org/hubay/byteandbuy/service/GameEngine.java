@@ -67,10 +67,6 @@ public class GameEngine {
         collector.add(player.getName() + " sa posunul na " + game.getCurrentTile(player).getName());
 
         tileActionService.resolveTileEffects(game, player);
-
-        boolean shouldEndTurn = turnService.shouldEndTurn(game, player);
-        response.setExtraTurn(shouldEndTurn);
-
         turnService.finishTurn(game);
 
         response.setEvents(collector.getEvents());
@@ -160,17 +156,23 @@ public class GameEngine {
     }
 
     public TurnResponse drawCard(Game game) {
+        Player player = game.getCurrentPlayer();
         GameEventCollector collector = new GameEventCollector();
         game.setEventCollector(collector);
 
         TurnResponse response = new TurnResponse();
 
+        int oldPosition = player.getPosition();
         tileActionService.drawCard(game);
+
+        if (oldPosition != player.getPosition()) {
+            tileActionService.resolveTileEffects(game, player);
+        }
 
         response.setEvents(collector.getEvents());
 
         turnService.finishTurn(game);
-        response.setNextPlayer(game.getCurrentPlayer().getName());
+        response.setNextPlayer(player.getName());
 
         return response;
     }
