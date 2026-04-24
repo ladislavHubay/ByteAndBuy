@@ -16,12 +16,11 @@ public class EconomyService {
      * Vykona nakup policka na ktorom hrac stoji
      * ak su splnene vsetky podmienky.
      */
-    public void buyProperty(Game game) {
+    public void buyProperty(Game game, Player player) {
         if (!game.isWaitingForDecision()) {
             throw new IllegalStateException("No decision expected");
         }
 
-        Player player = game.getCurrentPlayer();
         Tile tile = game.getCurrentTile(player);
 
         if (!(tile instanceof Buyable buyable)) {

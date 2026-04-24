@@ -55,8 +55,7 @@ public class TileActionService {
         }
     }
 
-    public void drawCard(Game game){
-        Player player = game.getCurrentPlayer();
+    public void drawCard(Game game, Player player){
         Tile tile = game.getCurrentTile(player);
 
         TileActionType result = tile.interact(game, player);

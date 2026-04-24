@@ -19,9 +19,7 @@ public class TurnService {
      * Ukonci tah aktualneho hraca. Ak hrac hodi 6, na tahu zostava rovnaky hrac.
      * Inak posunie dalsieho hraca na tah.
      */
-    public void finishTurn(Game game) {
-        Player player = game.getCurrentPlayer();
-
+    public void finishTurn(Game game, Player player) {
         if(game.isWaitingForDecision()){
             return;
         }

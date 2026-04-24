@@ -54,7 +54,7 @@ public class GameEngine {
         collector.add("Hodil si: " + dice);
 
         if (jailService.handleJailTurn(game, player, dice)) {
-            turnService.finishTurn(game);
+            turnService.finishTurn(game, player);
             response.setEvents(collector.getEvents());
             return response;
         }
@@ -67,7 +67,7 @@ public class GameEngine {
         collector.add(player.getName() + " sa posunul na " + game.getCurrentTile(player).getName());
 
         tileActionService.resolveTileEffects(game, player);
-        turnService.finishTurn(game);
+        turnService.finishTurn(game, player);
 
         response.setEvents(collector.getEvents());
 
@@ -95,14 +95,14 @@ public class GameEngine {
         response.setCurrentPlayer(player.getName());
         response.setTileName(tile.getName());
 
-        economyService.buyProperty(game);
+        economyService.buyProperty(game, player);
 
         int moneyAfter = player.getMoney();
         response.setMoney(moneyAfter);
 
         game.resumePlaying();
 
-        turnService.finishTurn(game);
+        turnService.finishTurn(game, player);
 
         response.setNextPlayer(game.getCurrentPlayer().getName());
         response.setEvents(collector.getEvents());
@@ -130,7 +130,7 @@ public class GameEngine {
 
         game.resumePlaying();
 
-        turnService.finishTurn(game);
+        turnService.finishTurn(game, player);
 
         response.setNextPlayer(game.getCurrentPlayer().getName());
         response.setEvents(collector.getEvents());
@@ -163,7 +163,7 @@ public class GameEngine {
         TurnResponse response = new TurnResponse();
 
         int oldPosition = player.getPosition();
-        tileActionService.drawCard(game);
+        tileActionService.drawCard(game, player);
 
         if (oldPosition != player.getPosition()) {
             tileActionService.resolveTileEffects(game, player);
@@ -171,7 +171,7 @@ public class GameEngine {
 
         response.setEvents(collector.getEvents());
 
-        turnService.finishTurn(game);
+        turnService.finishTurn(game, player);
         response.setNextPlayer(player.getName());
 
         return response;
