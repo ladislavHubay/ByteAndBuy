@@ -17,7 +17,7 @@ public class EconomyService {
      * ak su splnene vsetky podmienky.
      */
     public void buyProperty(Game game, Player player) {
-        if (!game.isWaitingForDecision()) {
+        if (!game.isWaitingForBuy()) {
             throw new IllegalStateException("No decision expected");
         }
 
@@ -37,8 +37,6 @@ public class EconomyService {
         } else {
             game.getEventCollector().add("Nemas dost na ucte");
         }
-
-        game.resumePlaying();
     }
 
     /**

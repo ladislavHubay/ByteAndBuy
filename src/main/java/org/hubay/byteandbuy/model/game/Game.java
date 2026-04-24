@@ -48,12 +48,21 @@ public class Game {
     }
 
     /**
-     * Vrati stav hry - cakanie na rozhodnutie.
+     * Vrati stav hry - cakanie na rozhodnutie hraca kupit/nekupit policko.
      * Moze ist napriklad o situaciu ak je hrac na policku ktore je mozne kupit
      * a hra caka na rozhodnutie hraca ci policko kupi alebo nie.
      */
-    public boolean isWaitingForDecision() {
-        return state == GameState.WAITING_FOR_DECISION;
+    public boolean isWaitingForBuy() {
+        return state == GameState.WAITING_FOR_BUY;
+    }
+
+    /**
+     * Vrati stav hry - cakanie na potiahnutu kartu.
+     * Moze ist napriklad o situaciu ak je hrac na policku kde sa taha karta
+     * a hra caka na potiahnutie karty..
+     */
+    public boolean isWaitingForCard() {
+        return state == GameState.WAITING_FOR_CARD;
     }
 
     /**
@@ -65,12 +74,21 @@ public class Game {
     }
 
     /**
-     * Nastavy stav hry - cakanie na rozhodnutie.
+     * Nastavy stav hry - cakanie na rozhodnutie pri moznosti nakupu.
      * Moze ist napriklad o situaciu ak je hrac na policku ktore je mozne kupit
      * a hra caka na rozhodnutie hraca ci policko kupi alebo nie.
      */
-    public void waitForDecision() {
-        this.state = GameState.WAITING_FOR_DECISION;
+    public void waitForBuy() {
+        this.state = GameState.WAITING_FOR_BUY;
+    }
+
+    /**
+     * Nastavy stav hry - cakanie na rozhodnutie pri moznosti tahania karty.
+     * Moze ist napriklad o situaciu ak je hrac na policku kde sa taha karta
+     * a hra caka na potiahnutie karty.
+     */
+    public void waitForCard() {
+        this.state = GameState.WAITING_FOR_CARD;
     }
 
     /**

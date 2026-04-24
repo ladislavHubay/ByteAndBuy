@@ -5,6 +5,7 @@ package org.hubay.byteandbuy.model.game;
  */
 public enum GameState {
     PLAYING,
-    WAITING_FOR_DECISION,
+    WAITING_FOR_BUY,
+    WAITING_FOR_CARD,
     FINISHED
 }

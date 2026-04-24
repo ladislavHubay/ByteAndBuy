@@ -20,14 +20,14 @@ public class TurnService {
      * Inak posunie dalsieho hraca na tah.
      */
     public void finishTurn(Game game, Player player) {
-        if(game.isWaitingForDecision()){
+        if(game.isWaitingForBuy() || game.isWaitingForCard()) {
             return;
         }
 
         if (shouldEndTurn(game, player)) {
             moveToNextPlayer(game);
             game.getEventCollector().add("Nasleduje hrac: " + game.getCurrentPlayer().getName());
-        } else {
+        } else if (game.getLastDice() == 6) {
             game.getEventCollector().add(player.getName() + " hodil si 6. Hadzes znova");
         }
     }

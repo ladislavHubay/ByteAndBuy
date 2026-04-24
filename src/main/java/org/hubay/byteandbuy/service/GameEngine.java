@@ -61,6 +61,7 @@ public class GameEngine {
 
         if (jailService.handleJailTurn(game, player, dice)) {
             turnService.finishTurn(game, player);
+            response.setNextPlayer(game.getCurrentPlayer().getName());
             response.setEvents(collector.getEvents());
             return response;
         }
@@ -73,7 +74,9 @@ public class GameEngine {
         collector.add(player.getName() + " sa posunul na " + game.getCurrentTile(player).getName());
 
         tileActionService.resolveTileEffects(game, player);
+        response.setMoney(player.getMoney());
         turnService.finishTurn(game, player);
+        response.setNextPlayer(game.getCurrentPlayer().getName());
 
         response.setEvents(collector.getEvents());
 
@@ -102,12 +105,9 @@ public class GameEngine {
         response.setTileName(tile.getName());
 
         economyService.buyProperty(game, player);
-
-        int moneyAfter = player.getMoney();
-        response.setMoney(moneyAfter);
-
         game.resumePlaying();
 
+        response.setMoney(player.getMoney());
         turnService.finishTurn(game, player);
 
         response.setNextPlayer(game.getCurrentPlayer().getName());
@@ -125,7 +125,7 @@ public class GameEngine {
 
         Player player = game.getCurrentPlayer();
 
-        if (!game.isWaitingForDecision()) {
+        if (!game.isWaitingForBuy()) {
             throw new IllegalStateException("No decision expected");
         }
 
@@ -161,6 +161,11 @@ public class GameEngine {
 
     public TurnResponse drawCard(Game game) {
         Player player = game.getCurrentPlayer();
+
+        if (!game.isWaitingForCard()) {
+            throw new IllegalStateException("No decision expected");
+        }
+
         GameEventCollector collector = new GameEventCollector();
         game.setEventCollector(collector);
 
