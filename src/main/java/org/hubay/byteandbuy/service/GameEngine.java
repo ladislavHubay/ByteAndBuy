@@ -38,6 +38,12 @@ public class GameEngine {
 
         TurnResponse response = new TurnResponse();
 
+        if (game.isFinished()) {
+            collector.add("Hra je ukoncena");
+            response.setEvents(collector.getEvents());
+            return response;
+        }
+
         Player player = game.getCurrentPlayer();
         response.setCurrentPlayer(player.getName());
         response.setFromPosition(player.getPosition());
@@ -145,12 +151,10 @@ public class GameEngine {
     public void leaveGame(Game game) {
         Player player = game.getCurrentPlayer();
 
-        player.setInGame(false);
-        game.resumePlaying();
-
         playerStateService.removePlayerFromGame(game, player);
 
-        if (game.isFinished()) {
+        if (!game.isFinished()) {
+            game.resumePlaying();
             turnService.moveToNextPlayer(game);
         }
     }
@@ -172,7 +176,7 @@ public class GameEngine {
         response.setEvents(collector.getEvents());
 
         turnService.finishTurn(game, player);
-        response.setNextPlayer(player.getName());
+        response.setNextPlayer(game.getCurrentPlayer().getName());
 
         return response;
     }
