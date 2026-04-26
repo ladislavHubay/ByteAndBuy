@@ -20,7 +20,7 @@ public class TurnService {
      * Inak posunie dalsieho hraca na tah.
      */
     public void finishTurn(Game game, Player player) {
-        if(game.isWaitingForBuy() || game.isWaitingForCard()) {
+        if (game.isWaitingForAction()) {
             return;
         }
 

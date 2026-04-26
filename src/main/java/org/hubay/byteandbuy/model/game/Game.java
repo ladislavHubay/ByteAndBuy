@@ -66,6 +66,14 @@ public class Game {
     }
 
     /**
+     * Vrati ci hra momentalne caka na akciu hraca.
+     * Pouziva sa pri spolocnom spracovani stavov, v ktorych tah este nema skoncit.
+     */
+    public boolean isWaitingForAction() {
+        return isWaitingForBuy() || isWaitingForCard();
+    }
+
+    /**
      * Vrati stav hry - hra sa skoncila.
      * Napriklad ak v hre ostal iba jeden (posledny) hrac.
      */

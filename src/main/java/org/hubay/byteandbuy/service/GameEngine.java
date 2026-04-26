@@ -33,21 +33,15 @@ public class GameEngine {
     }
 
     public TurnResponse roll(Game game) {
-        GameEventCollector collector = new GameEventCollector();
-        game.setEventCollector(collector);
-
-        TurnResponse response = new TurnResponse();
+        GameEventCollector collector = createCollector(game);
 
         if (game.isFinished()) {
             collector.add("Hra je ukoncena");
-            response.setEvents(collector.getEvents());
-            return response;
+            return createFinishedResponse(collector);
         }
 
         Player player = game.getCurrentPlayer();
-        response.setCurrentPlayer(player.getName());
-        response.setFromPosition(player.getPosition());
-        response.setMoney(player.getMoney());
+        TurnResponse response = createRollResponseFor(player);
 
         collector.add(player.getName() + " je na pozicii " +
                 game.getCurrentTile(player).getName() +
@@ -60,9 +54,7 @@ public class GameEngine {
         collector.add("Hodil si: " + dice);
 
         if (jailService.handleJailTurn(game, player, dice)) {
-            turnService.finishTurn(game, player);
-            response.setNextPlayer(game.getCurrentPlayer().getName());
-            response.setEvents(collector.getEvents());
+            completeAction(game, player, response, collector);
             return response;
         }
 
@@ -75,10 +67,7 @@ public class GameEngine {
 
         tileActionService.resolveTileEffects(game, player);
         response.setMoney(player.getMoney());
-        turnService.finishTurn(game, player);
-        response.setNextPlayer(game.getCurrentPlayer().getName());
-
-        response.setEvents(collector.getEvents());
+        completeAction(game, player, response, collector);
 
         return response;
     }
@@ -94,24 +83,19 @@ public class GameEngine {
      * Spracuje rozhodnutie hraca kupit policko.
      */
     public TurnResponse buyProperty(Game game) {
-        GameEventCollector collector = new GameEventCollector();
-        game.setEventCollector(collector);
+        GameEventCollector collector = createCollector(game);
 
         Player player = game.getCurrentPlayer();
         Tile tile = game.getCurrentTile(player);
 
-        TurnResponse response = new TurnResponse();
-        response.setCurrentPlayer(player.getName());
+        TurnResponse response = createResponseFor(player);
         response.setTileName(tile.getName());
 
         economyService.buyProperty(game, player);
         game.resumePlaying();
 
         response.setMoney(player.getMoney());
-        turnService.finishTurn(game, player);
-
-        response.setNextPlayer(game.getCurrentPlayer().getName());
-        response.setEvents(collector.getEvents());
+        completeAction(game, player, response, collector);
 
         return response;
     }
@@ -120,8 +104,7 @@ public class GameEngine {
      * Spracuje rozhodnutie hraca nekupit policko.
      */
     public TurnResponse skipPurchase(Game game) {
-        GameEventCollector collector = new GameEventCollector();
-        game.setEventCollector(collector);
+        GameEventCollector collector = createCollector(game);
 
         Player player = game.getCurrentPlayer();
 
@@ -129,17 +112,13 @@ public class GameEngine {
             throw new IllegalStateException("No decision expected");
         }
 
-        TurnResponse response = new TurnResponse();
-        response.setCurrentPlayer(player.getName());
+        TurnResponse response = createResponseFor(player);
 
         collector.add(player.getName() + " nekupil policko");
 
         game.resumePlaying();
 
-        turnService.finishTurn(game, player);
-
-        response.setNextPlayer(game.getCurrentPlayer().getName());
-        response.setEvents(collector.getEvents());
+        completeAction(game, player, response, collector);
 
         return response;
     }
@@ -162,27 +141,65 @@ public class GameEngine {
     public TurnResponse drawCard(Game game) {
         Player player = game.getCurrentPlayer();
 
+        ensureWaitingForCard(game);
+
+        GameEventCollector collector = createCollector(game);
+        TurnResponse response = createResponseFor(player);
+
+        drawAndResolveCardEffects(game, player);
+
+        completeAction(game, player, response, collector);
+
+        return response;
+    }
+
+    private GameEventCollector createCollector(Game game) {
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
+        return collector;
+    }
+
+    private TurnResponse createResponseFor(Player player) {
+        TurnResponse response = new TurnResponse();
+        response.setCurrentPlayer(player.getName());
+        return response;
+    }
+
+    private TurnResponse createRollResponseFor(Player player) {
+        TurnResponse response = createResponseFor(player);
+        response.setFromPosition(player.getPosition());
+        response.setMoney(player.getMoney());
+        return response;
+    }
+
+    private TurnResponse createFinishedResponse(GameEventCollector collector) {
+        TurnResponse response = new TurnResponse();
+        response.setEvents(collector.getEvents());
+        return response;
+    }
+
+    private void ensureWaitingForCard(Game game) {
         if (!game.isWaitingForCard()) {
             throw new IllegalStateException("No decision expected");
         }
+    }
 
-        GameEventCollector collector = new GameEventCollector();
-        game.setEventCollector(collector);
-
-        TurnResponse response = new TurnResponse();
-
+    private void drawAndResolveCardEffects(Game game, Player player) {
         int oldPosition = player.getPosition();
         tileActionService.drawCard(game, player);
 
         if (oldPosition != player.getPosition()) {
             tileActionService.resolveTileEffects(game, player);
         }
+    }
 
-        response.setEvents(collector.getEvents());
-
+    private void completeAction(Game game, Player player, TurnResponse response, GameEventCollector collector) {
         turnService.finishTurn(game, player);
-        response.setNextPlayer(game.getCurrentPlayer().getName());
+        finalizeResponse(response, game, collector);
+    }
 
-        return response;
+    private void finalizeResponse(TurnResponse response, Game game, GameEventCollector collector) {
+        response.setNextPlayer(game.getCurrentPlayer().getName());
+        response.setEvents(collector.getEvents());
     }
 }
