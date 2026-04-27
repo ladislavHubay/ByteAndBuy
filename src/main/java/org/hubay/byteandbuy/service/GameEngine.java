@@ -35,18 +35,34 @@ public class GameEngine {
         this.jailService = jailService;
     }
 
+    /**
+     * Vykona cely tah hraca.
+     * - skontroluje ci hra neskoncila
+     * - vykona hod kockou
+     * - zabespeci riesenie vazanie
+     * - posunie hraca na potrebnu poziciu a vyhodnoti efekt policka
+     * - ukonci tah hraca
+     */
     public TurnResponse roll(Game game) {
-        GameEventCollector collector = createCollector(game);
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
+        TurnResponse response = new TurnResponse();
 
         if (game.isFinished()) {
             return createFinishedResponse(collector);
         }
 
         Player player = game.getCurrentPlayer();
-        TurnResponse response = createRollResponseFor(player);
+        response.setFromPosition(player.getPosition());
+        response.setCurrentPlayer(player.getName());
+        collector.add(player.getName() + " je na pozicii " +
+                game.getCurrentTile(player).getName() +
+                ", ma: " + player.getMoney());
 
-        logRollStart(game, player, collector);
-        int dice = performRoll(game, response, collector);
+        int dice = rollDice();
+        game.setDice(dice);
+        response.setDice(dice);
+        collector.add("Hodil si: " + dice);
 
         if (handleJailRoll(game, player, dice, response, collector)) {
             return response;
@@ -69,10 +85,16 @@ public class GameEngine {
      * Spracuje rozhodnutie hraca kupit policko.
      */
     public TurnResponse buyProperty(Game game) {
-        GameEventCollector collector = createCollector(game);
+        if (!game.isWaitingForBuy()) {
+            throw new IllegalStateException("No decision expected");
+        }
+
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
+        TurnResponse response = new TurnResponse();
         Player player = game.getCurrentPlayer();
         Tile tile = game.getCurrentTile(player);
-        TurnResponse response = createResponseFor(player);
+        response.setCurrentPlayer(player.getName());
         response.setTileName(tile.getName());
 
         economyService.buyProperty(game, player);
@@ -87,15 +109,16 @@ public class GameEngine {
      * Spracuje rozhodnutie hraca nekupit policko.
      */
     public TurnResponse skipPurchase(Game game) {
-        GameEventCollector collector = createCollector(game);
-        Player player = game.getCurrentPlayer();
-
         if (!game.isWaitingForBuy()) {
             throw new IllegalStateException("No decision expected");
         }
 
-        TurnResponse response = createResponseFor(player);
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
+        TurnResponse response = new TurnResponse();
+        Player player = game.getCurrentPlayer();
 
+        response.setCurrentPlayer(player.getName());
         collector.add(player.getName() + " nekupil policko");
 
         game.resumePlaying();
@@ -124,43 +147,21 @@ public class GameEngine {
      * Spracuje tahanie karty ak hrac stoji na policku kde sa ma potiahnut karta.
      */
     public TurnResponse drawCard(Game game) {
+        if (!game.isWaitingForCard()) {
+            throw new IllegalStateException("No decision expected");
+        }
+
         Player player = game.getCurrentPlayer();
+        TurnResponse response = new TurnResponse();
 
-        ensureWaitingForCard(game);
+        GameEventCollector collector = new GameEventCollector();
+        game.setEventCollector(collector);
 
-        GameEventCollector collector = createCollector(game);
-        TurnResponse response = createResponseFor(player);
+        response.setCurrentPlayer(player.getName());
 
         drawAndResolveCardEffects(game, player);
         completeAction(game, player, response, collector);
 
-        return response;
-    }
-
-    /**
-     * Vytvori objekt GameEventCollector.
-     */
-    private GameEventCollector createCollector(Game game) {
-        GameEventCollector collector = new GameEventCollector();
-        game.setEventCollector(collector);
-        return collector;
-    }
-
-    /**
-     * Vytvori objekt TurnResponse a ulozi do neho aktualneho hraca pre ukladanie informacii pre frontend.
-     */
-    private TurnResponse createResponseFor(Player player) {
-        TurnResponse response = new TurnResponse();
-        response.setCurrentPlayer(player.getName());
-        return response;
-    }
-
-    /**
-     * Do objektu TurnResponse a ulozi poziciu a aktualny stav financii hraca.
-     */
-    private TurnResponse createRollResponseFor(Player player) {
-        TurnResponse response = createResponseFor(player);
-        response.setFromPosition(player.getPosition());
         return response;
     }
 
@@ -175,27 +176,6 @@ public class GameEngine {
     }
 
     /**
-     * Do objektu GameEventCollector ulozi pre info startovaciu poziciu hraca,
-     * meno hraca a sumu z akou hrac zacina konkretny tah.
-     */
-    private void logRollStart(Game game, Player player, GameEventCollector collector) {
-        collector.add(player.getName() + " je na pozicii " +
-                game.getCurrentTile(player).getName() +
-                ", ma: " + player.getMoney());
-    }
-
-    /**
-     * Vykona hod kockou a ulozi pre potreby frontendu.
-     */
-    private int performRoll(Game game, TurnResponse response, GameEventCollector collector) {
-        int dice = rollDice();
-        game.setDice(dice);
-        response.setDice(dice);
-        collector.add("Hodil si: " + dice);
-        return dice;
-    }
-
-    /**
      * Spracuje tah hraca vo vazani.
      * Ak bol tah ukonceny vo vazani vrati true.
      */
@@ -206,15 +186,6 @@ public class GameEngine {
 
         completeAction(game, player, response, collector);
         return true;
-    }
-
-    /**
-     * Skontroluje ci hrac caka na tahanie karty.
-     */
-    private void ensureWaitingForCard(Game game) {
-        if (!game.isWaitingForCard()) {
-            throw new IllegalStateException("No decision expected");
-        }
     }
 
     /**
@@ -246,13 +217,6 @@ public class GameEngine {
      */
     private void completeAction(Game game, Player player, TurnResponse response, GameEventCollector collector) {
         turnService.finishTurn(game, player);
-        finalizeResponse(response, game, collector);
-    }
-
-    /**
-     * Z finalizuje zoznam udalosti pre odpoved pre frontend.
-     */
-    private void finalizeResponse(TurnResponse response, Game game, GameEventCollector collector) {
         response.setEvents(collector.getEvents());
         response.setPlayers(mapPlayers(game));
     }
