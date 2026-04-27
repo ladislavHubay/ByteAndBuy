@@ -1,6 +1,7 @@
 package org.hubay.byteandbuy.factory;
 
 import org.hubay.byteandbuy.config.GameConfig;
+import org.hubay.byteandbuy.config.RandomConfig;
 import org.hubay.byteandbuy.model.board.Board;
 import org.hubay.byteandbuy.model.cards.*;
 import org.hubay.byteandbuy.model.game.Game;
@@ -16,11 +17,13 @@ import java.util.List;
  */
 @Component
 public class GameFactory {
+    private final RandomConfig random;
     private final GameConfig config;
     private static final int START_POSITION = 0;
     private static final int JAIL_POSITION = 13;
 
-    public GameFactory(GameConfig config) {
+    public GameFactory(RandomConfig random, GameConfig config) {
+        this.random = random;
         this.config = config;
     }
 
@@ -38,17 +41,22 @@ public class GameFactory {
         return new Game(config, players, board, START_POSITION);
     }
 
-    private static Deck createCardsWithRandomEvents() {
+    private Deck createCardsWithRandomEvents() {
         List<Card> randomEventCards = List.of(
-                new MoveStepsCard(3, "Posun sa o 3 policka dopredu"),
-                new MoveToPositionCard(START_POSITION, "Posun sa na START"),
-                new GoToJailCard(JAIL_POSITION, "Presun sa do vazania")
+                new MoveStepsCard(3, "Posun sa o 3 policka dopredu", true),
+                new MoveToPositionCard(START_POSITION, "Posun sa na START", true),
+                new GoToJailCard(JAIL_POSITION, "Presun sa do vazania", false),
+                new TeleportCard(
+                        "Oslavy firemných úspechov sa vymkli spod kontroly. Rano si sa zobudil na neocakavanom mieste.",
+                        false,
+                        random
+                )
         );
 
         return new Deck(randomEventCards);
     }
 
-    private static Deck createCardsWithFinancialTransactions() {
+    private Deck createCardsWithFinancialTransactions() {
         List<Card> financialTransactionCards = List.of(
                 new MoneyCard(50, "Vyhral si v loterii 50"),
                 new MoneyCard(-50, "Zaplat pokutu 50")

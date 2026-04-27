@@ -44,6 +44,10 @@ public class GameEngine {
      * - ukonci tah hraca
      */
     public TurnResponse roll(Game game) {
+        if (!game.isPlaying()) {
+            throw new IllegalStateException("Decision expected");
+        }
+
         GameEventCollector collector = new GameEventCollector();
         game.setEventCollector(collector);
         TurnResponse response = new TurnResponse();

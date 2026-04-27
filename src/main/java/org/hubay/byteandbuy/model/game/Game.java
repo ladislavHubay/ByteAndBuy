@@ -108,6 +108,14 @@ public class Game {
     }
 
     /**
+     * Vrati stav hry - hrac moze znovu hodit kockou.
+     * Napriklad ak hrac iba zacina svoj tah, nevyhodnocuje sa ziadne policko ani karta - musi najskor hadzat kockou.
+     */
+    public boolean isPlaying() {
+        return state == GameState.PLAYING;
+    }
+
+    /**
      * Nastavy stav hry - hra skoncila.
      * Napriklad ak v hre ostal iba jeden (posledny) hrac.
      */

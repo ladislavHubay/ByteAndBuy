@@ -9,19 +9,21 @@ import org.hubay.byteandbuy.model.player.Player;
 public class GoToJailCard implements Card {
     private final int position;
     private final String description;
+    private final boolean applyBonusStart;
 
-    public GoToJailCard(int position, String description) {
+    public GoToJailCard(int position, String description, boolean applyBonusStart) {
         this.position = position;
         this.description = description;
+        this.applyBonusStart = applyBonusStart;
     }
 
     /**
      * Presunie hraca do vazania a jeho stav nastavy na 'vo vazani' (inJail = true).
-     * Deaktivuje narok na bonus pri prechode cez policko START.
+     * Bonus za presun cez START urcuje 'applyBonusStart'.
      */
     @Override
     public void apply(Game game, Player player) {
-        game.movePlayerTo(player, position, false);
+        game.movePlayerTo(player, position, applyBonusStart);
         player.setInJail(true);
     }
 
