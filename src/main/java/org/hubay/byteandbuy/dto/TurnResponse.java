@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hubay.byteandbuy.model.tiles.TileResult;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,9 +17,8 @@ public class TurnResponse {
     private int fromPosition;
     private int toPosition;
     private String tileName;
-    private int money;
-    private String nextPlayer;
-    private List<String> events = new ArrayList<>();
+    private List<PlayerSummary> players;
+    private List<String> events;
     private TileResult action;
     private String card;
 }

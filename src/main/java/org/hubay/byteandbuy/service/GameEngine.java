@@ -1,5 +1,6 @@
 package org.hubay.byteandbuy.service;
 
+import org.hubay.byteandbuy.dto.PlayerSummary;
 import org.hubay.byteandbuy.dto.TurnResponse;
 import org.hubay.byteandbuy.event.GameEventCollector;
 import org.hubay.byteandbuy.model.game.Game;
@@ -7,6 +8,8 @@ import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.Tile;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -75,7 +78,6 @@ public class GameEngine {
         economyService.buyProperty(game, player);
         game.resumePlaying();
 
-        response.setMoney(player.getMoney());
         completeAction(game, player, response, collector);
 
         return response;
@@ -159,7 +161,6 @@ public class GameEngine {
     private TurnResponse createRollResponseFor(Player player) {
         TurnResponse response = createResponseFor(player);
         response.setFromPosition(player.getPosition());
-        response.setMoney(player.getMoney());
         return response;
     }
 
@@ -238,7 +239,6 @@ public class GameEngine {
         response.setTileName(game.getCurrentTile(player).getName());
         collector.add(player.getName() + " sa posunul na " + game.getCurrentTile(player).getName());
         tileActionService.resolveTileEffects(game, player);
-        response.setMoney(player.getMoney());
     }
 
     /**
@@ -253,7 +253,28 @@ public class GameEngine {
      * Z finalizuje zoznam udalosti pre odpoved pre frontend.
      */
     private void finalizeResponse(TurnResponse response, Game game, GameEventCollector collector) {
-        response.setNextPlayer(game.getCurrentPlayer().getName());
         response.setEvents(collector.getEvents());
+        response.setPlayers(mapPlayers(game));
+    }
+
+    /**
+     * Prevedie zoznam hracov so zakladnymi informaciami do DTO objektu pre frontend.
+     * Metoda vrati zoznam vsetkych hracov bezohladu na to ci este hraju alebo uz dohrali.
+     */
+    private List<PlayerSummary> mapPlayers(Game game) {
+        List<PlayerSummary> result = new ArrayList<>();
+
+        for (Player player : game.getPlayers()) {
+            PlayerSummary dto = new PlayerSummary();
+            dto.setName(player.getName());
+            dto.setMoney(player.getMoney());
+            dto.setPosition(player.getPosition());
+            dto.setInGame(player.isInGame());
+            dto.setInJail(player.isInJail());
+
+            result.add(dto);
+        }
+
+        return result;
     }
 }
