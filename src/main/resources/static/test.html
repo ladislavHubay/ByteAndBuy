@@ -14,6 +14,13 @@
 
 <hr>
 
+<h3>Lobby</h3>
+<input id="playerName" placeholder="Meno hraca">
+<button onclick="joinGame()">Join</button>
+<button onclick="startGame()">Start</button>
+
+<hr>
+
 <button onclick="roll()">Roll</button>
 <button onclick="draw()">Draw Card</button>
 <button onclick="buy()">Buy</button>
@@ -23,7 +30,7 @@
 
 <hr>
 
-<h3>Výstup:</h3>
+<h3>Vystup:</h3>
 <pre id="output"></pre>
 
 <script>
@@ -36,52 +43,104 @@
             JSON.stringify(data, null, 2);
     }
 
+    async function request(url, options = {}) {
+        const res = await fetch(url, options);
+        const contentType = res.headers.get("content-type") || "";
+        const data = contentType.includes("application/json")
+            ? await res.json()
+            : await res.text();
+
+        if (!res.ok) {
+            setOutput({
+                status: res.status,
+                error: data
+            });
+            throw new Error(`Request failed: ${res.status}`);
+        }
+
+        return data;
+    }
+
+    function requireGame() {
+        if (!gameId) {
+            alert("Najprv vytvor hru");
+            return false;
+        }
+
+        return true;
+    }
+
     async function createGame() {
-        const res = await fetch(baseUrl + "/create", { method: "POST" });
-        gameId = await res.text();
+        gameId = await request(baseUrl + "/create", { method: "POST" });
         document.getElementById("gameId").textContent = gameId;
         setOutput({ message: "Game created", gameId });
     }
 
+    async function joinGame() {
+        if (!requireGame()) return;
+
+        const playerNameInput = document.getElementById("playerName");
+        const playerName = playerNameInput.value.trim();
+        if (!playerName) return alert("Zadaj meno hraca");
+
+        const data = await request(`${baseUrl}/${gameId}/join`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ playerName })
+        });
+
+        playerNameInput.value = "";
+        setOutput(data);
+    }
+
+    async function startGame() {
+        if (!requireGame()) return;
+
+        const data = await request(`${baseUrl}/${gameId}/start`, { method: "POST" });
+        setOutput(data);
+    }
+
     async function roll() {
-        if (!gameId) return alert("Najprv vytvor hru");
-        const res = await fetch(`${baseUrl}/${gameId}/roll`, { method: "POST" });
-        const data = await res.json();
+        if (!requireGame()) return;
+
+        const data = await request(`${baseUrl}/${gameId}/roll`, { method: "POST" });
         setOutput(data);
     }
 
     async function draw() {
-        if (!gameId) return alert("Najprv vytvor hru");
-        const res = await fetch(`${baseUrl}/${gameId}/draw`, { method: "POST" });
-        const data = await res.json();
+        if (!requireGame()) return;
+
+        const data = await request(`${baseUrl}/${gameId}/draw`, { method: "POST" });
         setOutput(data);
     }
 
     async function buy() {
-        if (!gameId) return alert("Najprv vytvor hru");
-        const res = await fetch(`${baseUrl}/${gameId}/buy`, { method: "POST" });
-        const data = await res.json();
+        if (!requireGame()) return;
+
+        const data = await request(`${baseUrl}/${gameId}/buy`, { method: "POST" });
         setOutput(data);
     }
 
     async function skip() {
-        if (!gameId) return alert("Najprv vytvor hru");
-        const res = await fetch(`${baseUrl}/${gameId}/skip`, { method: "POST" });
-        const data = await res.json();
+        if (!requireGame()) return;
+
+        const data = await request(`${baseUrl}/${gameId}/skip`, { method: "POST" });
         setOutput(data);
     }
 
     async function state() {
-        if (!gameId) return alert("Najprv vytvor hru");
-        const res = await fetch(`${baseUrl}/${gameId}/state`);
-        const data = await res.json();
+        if (!requireGame()) return;
+
+        const data = await request(`${baseUrl}/${gameId}/state`);
         setOutput(data);
     }
 
     async function leaveGame() {
-        if (!gameId) return alert("Najprv vytvor hru");
-        const res = await fetch(`${baseUrl}/${gameId}/leave`, { method: "POST" });
-        const data = await res.json();
+        if (!requireGame()) return;
+
+        const data = await request(`${baseUrl}/${gameId}/leave`, { method: "POST" });
         setOutput(data);
     }
 </script>

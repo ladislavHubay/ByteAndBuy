@@ -1,6 +1,6 @@
 package org.hubay.byteandbuy.service;
 
-import org.hubay.byteandbuy.dto.PlayerSummary;
+import org.hubay.byteandbuy.dto.PlayerSummaryMapper;
 import org.hubay.byteandbuy.dto.TurnResponse;
 import org.hubay.byteandbuy.event.GameEventCollector;
 import org.hubay.byteandbuy.model.game.Game;
@@ -8,8 +8,6 @@ import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.Tile;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -44,16 +42,18 @@ public class GameEngine {
      * - ukonci tah hraca
      */
     public TurnResponse roll(Game game) {
-        if (!game.isPlaying()) {
-            throw new IllegalStateException("Decision expected");
-        }
-
         GameEventCollector collector = new GameEventCollector();
         game.setEventCollector(collector);
         TurnResponse response = new TurnResponse();
 
         if (game.isFinished()) {
-            return createFinishedResponse(collector);
+            collector.add("Hra je ukoncena");
+            response.setEvents(collector.getEvents());
+            return response;
+        }
+
+        if (!game.isPlaying()) {
+            throw new IllegalStateException("Decision expected");
         }
 
         Player player = game.getCurrentPlayer();
@@ -170,16 +170,6 @@ public class GameEngine {
     }
 
     /**
-     * Vytvori odpoved pre frontend v pripade ukoncenia hry.
-     */
-    private TurnResponse createFinishedResponse(GameEventCollector collector) {
-        TurnResponse response = new TurnResponse();
-        collector.add("Hra je ukoncena");
-        response.setEvents(collector.getEvents());
-        return response;
-    }
-
-    /**
      * Spracuje tah hraca vo vazani.
      * Ak bol tah ukonceny vo vazani vrati true.
      */
@@ -222,27 +212,6 @@ public class GameEngine {
     private void completeAction(Game game, Player player, TurnResponse response, GameEventCollector collector) {
         turnService.finishTurn(game, player);
         response.setEvents(collector.getEvents());
-        response.setPlayers(mapPlayers(game));
-    }
-
-    /**
-     * Prevedie zoznam hracov so zakladnymi informaciami do DTO objektu pre frontend.
-     * Metoda vrati zoznam vsetkych hracov bezohladu na to ci este hraju alebo uz dohrali.
-     */
-    private List<PlayerSummary> mapPlayers(Game game) {
-        List<PlayerSummary> result = new ArrayList<>();
-
-        for (Player player : game.getPlayers()) {
-            PlayerSummary dto = new PlayerSummary();
-            dto.setName(player.getName());
-            dto.setMoney(player.getMoney());
-            dto.setPosition(player.getPosition());
-            dto.setInGame(player.isInGame());
-            dto.setInJail(player.isInJail());
-
-            result.add(dto);
-        }
-
-        return result;
+        response.setPlayers(PlayerSummaryMapper.toSummaries(game.getPlayers()));
     }
 }

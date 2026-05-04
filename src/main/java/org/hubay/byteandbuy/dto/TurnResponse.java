@@ -2,7 +2,6 @@ package org.hubay.byteandbuy.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hubay.byteandbuy.model.tiles.TileResult;
 
 import java.util.List;
 
@@ -19,6 +18,4 @@ public class TurnResponse {
     private String tileName;
     private List<PlayerSummary> players;
     private List<String> events;
-    private TileResult action;
-    private String card;
 }

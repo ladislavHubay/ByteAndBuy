@@ -49,6 +49,9 @@ public class TileActionService {
         }
     }
 
+    /**
+     * Spracuje tahanie karty na aktualnom policku.
+     */
     public void drawCard(Game game, Player player){
         Tile tile = game.getCurrentTile(player);
 

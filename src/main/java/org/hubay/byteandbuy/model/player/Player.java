@@ -3,11 +3,14 @@ package org.hubay.byteandbuy.model.player;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 /**
  * Reprezentuje hraca.
  */
 @Getter
 public class Player {
+    private final UUID id;
     private final String name;
     private int position;
     private int money;
@@ -17,11 +20,17 @@ public class Player {
     @Getter
     private boolean inJail;
 
-    public Player(String name, int position, int money, boolean inGame) {
+    public Player(UUID id, String name, int position, int money, boolean inGame) {
+        this(id, name, position, money, inGame, false);
+    }
+
+    public Player(UUID id, String name, int position, int money, boolean inGame, boolean inJail) {
+        this.id = id;
         this.name = name;
         this.position = position;
         this.money = money;
         this.inGame = inGame;
+        this.inJail = inJail;
     }
 
     /**

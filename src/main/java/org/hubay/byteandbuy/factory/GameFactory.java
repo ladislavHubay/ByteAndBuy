@@ -6,6 +6,8 @@ import org.hubay.byteandbuy.model.board.Board;
 import org.hubay.byteandbuy.model.cards.*;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
+import org.hubay.byteandbuy.persistence.snapshot.GameSnapshot;
+import org.hubay.byteandbuy.persistence.snapshot.PlayerSnapshot;
 import org.hubay.byteandbuy.model.tiles.*;
 import org.springframework.stereotype.Component;
 
@@ -13,23 +15,53 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Inicializuje hracov, hernu dosku, balicky kariet.
+ * Inicializuje hracov, hernu dosku, balicky kariet - vytvory celu hru.
  */
 @Component
 public class GameFactory {
     private final RandomConfig random;
     private final GameConfig config;
+    private final PlayerFactory playerFactory;
     private static final int START_POSITION = 0;
     private static final int JAIL_POSITION = 13;
 
-    public GameFactory(RandomConfig random, GameConfig config) {
+    public GameFactory(RandomConfig random, GameConfig config, PlayerFactory playerFactory) {
         this.random = random;
         this.config = config;
+        this.playerFactory = playerFactory;
     }
 
-    public Game createSampleGame() {
-        List<Player> players = createPlayers();
+    /**
+     * Vytvori prazdnu hru bez hracov.
+     */
+    public Game createEmptyGame() {
+        return createGame(new ArrayList<>());
+    }
 
+    /**
+     * Vytvori noveho hraca s default nastavenim.
+     */
+    public Player createPlayer(String name) {
+        return playerFactory.createNew(name, START_POSITION, config.getStartMoney(), true);
+    }
+
+    /**
+     * Vytvori hru.
+     * Ak hra uz bola ulozena v DB tak z nej vytvory hru,
+     * ak nie tak vytvori uplne novu prazdnu hru.
+     */
+    public Game createGame(GameSnapshot snapshot) {
+        if (snapshot == null || snapshot.getPlayers() == null) {
+            return createEmptyGame();
+        }
+
+        return createGame(createPlayers(snapshot.getPlayers()));
+    }
+
+    /**
+     * Vytvori hru z DB (snapshotu).
+     */
+    private Game createGame(List<Player> players) {
         Deck randomDeck = createCardsWithRandomEvents();
         Deck financeDeck = createCardsWithFinancialTransactions();
 
@@ -41,6 +73,9 @@ public class GameFactory {
         return new Game(config, players, board, START_POSITION);
     }
 
+    /**
+     * Vytvori balicek kariet (karty s posunom pozicii hraca).
+     */
     private Deck createCardsWithRandomEvents() {
         List<Card> randomEventCards = List.of(
                 new MoveStepsCard(3, "Posun sa o 3 policka dopredu", true),
@@ -56,6 +91,9 @@ public class GameFactory {
         return new Deck(randomEventCards);
     }
 
+    /**
+     * Vytvori balicek kariet (karty s transakciami na ucte).
+     */
     private Deck createCardsWithFinancialTransactions() {
         List<Card> financialTransactionCards = List.of(
                 new MoneyCard(50, "Vyhral si v loterii 50"),
@@ -65,15 +103,29 @@ public class GameFactory {
         return new Deck(financialTransactionCards);
     }
 
-    private List<Player> createPlayers() {
+    /**
+     * Obnovi hracov z DB (zo snapshotu).
+     */
+    private List<Player> createPlayers(List<PlayerSnapshot> snapshots) {
         List<Player> players = new ArrayList<>();
-        players.add(new Player("Peter", START_POSITION, config.getStartMoney(), true));
-        players.add(new Player("Katka", START_POSITION, config.getStartMoney(), true));
-        players.add(new Player("Andrea", START_POSITION, config.getStartMoney(), true));
+
+        for (PlayerSnapshot snapshot : snapshots) {
+            players.add(playerFactory.restore(
+                    snapshot.getId(),
+                    snapshot.getName(),
+                    snapshot.getPosition(),
+                    snapshot.getMoney(),
+                    snapshot.isInGame(),
+                    snapshot.isInJail()
+            ));
+        }
 
         return players;
     }
 
+    /**
+     * Vytvori policka na hracej doske.
+     */
     private List<Tile> createTiles(Deck randomEventsDeck, Deck financialTransactionsDeck, Tile startTile) {
         List<Tile> tiles = new ArrayList<>();
         tiles.add(startTile);
@@ -106,6 +158,9 @@ public class GameFactory {
         return tiles;
     }
 
+    /**
+     * Vytvori skupiny a prida do nich policka ktore patria spolu.
+     */
     private void addPropertyGroup(List<Tile> tiles, PropertyGroup propertyGroup,
                                          int position, String name, int price, int rent) {
         PropertyTile propertyTile = new PropertyTile(position, name, price, rent, propertyGroup, config.getFullGroupRentMultiplier());

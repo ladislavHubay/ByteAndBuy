@@ -13,6 +13,8 @@ public class GameConfiguration {
     private int startBonus;
     @Value("${game.startMoney}")
     private int startMoney;
+    @Value("${game.minPlayersToStart}")
+    private int minPlayersToStart;
     @Value("${game.fullGroupRentMultiplier}")
     private double fullGroupRentMultiplier;
     @Value("${game.workshopDiscount}")
@@ -20,6 +22,6 @@ public class GameConfiguration {
 
     @Bean
     public GameConfig gameConfig() {
-        return new GameConfig(startBonus, startMoney, fullGroupRentMultiplier, workshopDiscount);
+        return new GameConfig(startBonus, startMoney, minPlayersToStart, fullGroupRentMultiplier, workshopDiscount);
     }
 }

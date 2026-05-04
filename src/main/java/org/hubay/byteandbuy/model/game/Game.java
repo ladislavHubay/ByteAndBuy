@@ -9,6 +9,7 @@ import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.Tile;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Reprezentuje aktualny stav prebiehajucej hry.
@@ -23,6 +24,7 @@ public class Game {
     @Setter
     private int currentPlayerIndex;
     private int lastDice;
+    @Setter
     private GameState state;
 
     public Game(GameConfig gameConfig, List<Player> players, Board board, int currentPlayerIndex) {
@@ -30,14 +32,38 @@ public class Game {
         this.players = players;
         this.board = board;
         this.currentPlayerIndex = currentPlayerIndex;
-        this.state = GameState.PLAYING;
+        this.state = GameState.WAITING_FOR_PLAYERS;
     }
 
     /**
      * Vrati hraca, ktory je prave na tahu.
      */
     public Player getCurrentPlayer() {
+        if (players.isEmpty()) {
+            throw new IllegalStateException("Game has no players yet");
+        }
+
         return players.get(currentPlayerIndex);
+    }
+
+    /**
+     * Prida noveho hraca do lobby.
+     */
+    public void addPlayer(Player player) {
+        players.add(player);
+    }
+
+    /**
+     * Vrati hraca podla jeho stabilneho identifikatora.
+     */
+    public Player getPlayerById(UUID playerId) {
+        for (Player player : players) {
+            if (player.getId().equals(playerId)) {
+                return player;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -54,6 +80,13 @@ public class Game {
      */
     public boolean isWaitingForBuy() {
         return state == GameState.WAITING_FOR_BUY;
+    }
+
+    /**
+     * Vrati stav hry - caka sa na pripojenie hracov.
+     */
+    public boolean isWaitingForPlayers() {
+        return state == GameState.WAITING_FOR_PLAYERS;
     }
 
     /**
@@ -105,6 +138,13 @@ public class Game {
      */
     public void resumePlaying() {
         this.state = GameState.PLAYING;
+    }
+
+    /**
+     * Urcuje, ci je mozne hru spustit.
+     */
+    public boolean canStart() {
+        return players.size() >= gameConfig.getMinPlayersToStart();
     }
 
     /**
