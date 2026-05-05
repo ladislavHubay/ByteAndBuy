@@ -136,12 +136,16 @@ public class GameEngine {
      * Spracuje rozhodnutie hraca odist z hry.
      * Hra pokracuje pokial v hre zostavaju minimalne dvaja hraci.
      */
-    public void leaveGame(Game game) {
-        Player player = game.getCurrentPlayer();
+    public void leaveGame(Game game, Player player) {
+        if (game.isWaitingForPlayers()) {
+            player.setInGame(false);
+            return;
+        }
 
+        boolean currentPlayerLeft = game.getCurrentPlayer().getId().equals(player.getId());
         playerStateService.removePlayerFromGame(game, player);
 
-        if (!game.isFinished()) {
+        if (!game.isFinished() && currentPlayerLeft) {
             game.resumePlaying();
             turnService.moveToNextPlayer(game);
         }

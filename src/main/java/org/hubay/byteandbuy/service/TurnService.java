@@ -26,6 +26,9 @@ public class TurnService {
 
         if (shouldEndTurn(game, player)) {
             moveToNextPlayer(game);
+            if (game.isFinished()) {
+                return;
+            }
             game.getEventCollector().add("Nasleduje hrac: " + game.getCurrentPlayer().getName());
         } else if (game.getLastDice() == 6) {
             game.getEventCollector().add(player.getName() + " hodil si 6. Hadzes znova");

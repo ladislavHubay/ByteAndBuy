@@ -153,7 +153,15 @@ public class Game {
      * Urcuje, ci je mozne hru spustit.
      */
     public boolean canStart() {
-        return players.size() >= gameConfig.getMinPlayersToStart();
+        int activePlayers = 0;
+
+        for (Player player : players) {
+            if (player.isInGame()) {
+                activePlayers++;
+            }
+        }
+
+        return activePlayers >= gameConfig.getMinPlayersToStart();
     }
 
     /**

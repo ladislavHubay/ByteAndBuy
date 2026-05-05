@@ -1,6 +1,7 @@
 package org.hubay.byteandbuy.controller;
 
 import org.hubay.byteandbuy.dto.JoinGameRequest;
+import org.hubay.byteandbuy.dto.PlayerActionRequest;
 import org.hubay.byteandbuy.dto.PlayerSummary;
 import org.hubay.byteandbuy.dto.TurnResponse;
 import org.hubay.byteandbuy.model.game.Game;
@@ -20,18 +21,18 @@ public class GameController {
     }
 
     @PostMapping("/{gameId}/buy")
-    public TurnResponse buyProperty(@PathVariable String gameId) {
-        return gameService.buyProperty(gameId);
+    public TurnResponse buyProperty(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+        return gameService.buyProperty(gameId, request.getPlayerId());
     }
 
     @PostMapping("/{gameId}/skip")
-    public TurnResponse skip(@PathVariable String gameId) {
-        return gameService.skipPurchase(gameId);
+    public TurnResponse skip(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+        return gameService.skipPurchase(gameId, request.getPlayerId());
     }
 
     @PostMapping("/{gameId}/leave")
-    public Game leaveGame(@PathVariable String gameId) {
-        return gameService.leaveGame(gameId);
+    public Game leaveGame(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+        return gameService.leaveGame(gameId, request.getPlayerId());
     }
 
     @PostMapping("/create")
@@ -50,13 +51,13 @@ public class GameController {
     }
 
     @PostMapping("/{gameId}/roll")
-    public TurnResponse roll(@PathVariable String gameId) {
-        return gameService.roll(gameId);
+    public TurnResponse roll(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+        return gameService.roll(gameId, request.getPlayerId());
     }
 
     @PostMapping("/{gameId}/draw")
-    public TurnResponse drawCard(@PathVariable String gameId) {
-        return gameService.drawCard(gameId);
+    public TurnResponse drawCard(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+        return gameService.drawCard(gameId, request.getPlayerId());
     }
 
     @GetMapping("/{gameId}/state")

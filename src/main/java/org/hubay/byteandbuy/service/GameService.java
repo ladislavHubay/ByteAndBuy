@@ -15,6 +15,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 
@@ -60,8 +61,11 @@ public class GameService {
      * Hrac kupi policko na ktorom stoji.
      */
     @Transactional
-    public TurnResponse buyProperty(String gameId) {
-        return execute(gameId, engine::buyProperty);
+    public TurnResponse buyProperty(String gameId, UUID playerId) {
+        return execute(gameId, game -> {
+            validateCurrentPlayerAction(game, playerId);
+            return engine.buyProperty(game);
+        });
     }
 
     /**
@@ -69,17 +73,21 @@ public class GameService {
      * Hrac nekupi policko na ktorom stoji.
      */
     @Transactional
-    public TurnResponse skipPurchase(String gameId) {
-        return execute(gameId, engine::skipPurchase);
+    public TurnResponse skipPurchase(String gameId, UUID playerId) {
+        return execute(gameId, game -> {
+            validateCurrentPlayerAction(game, playerId);
+            return engine.skipPurchase(game);
+        });
     }
 
     /**
      * Hrac sa odpoji z hry (napriklad bankrot alebo sa sam odpoji).
      */
     @Transactional
-    public Game leaveGame(String gameId) {
+    public Game leaveGame(String gameId, UUID playerId) {
         return execute(gameId, game -> {
-            engine.leaveGame(game);
+            Player player = validatePlayerAction(game, playerId);
+            engine.leaveGame(game, player);
             return game;
         });
     }
@@ -88,16 +96,24 @@ public class GameService {
      * Heac hodi kockou a posunie sa.
      */
     @Transactional
-    public TurnResponse roll(String gameId) {
-        return execute(gameId, engine::roll);
+    public TurnResponse roll(String gameId, UUID playerId) {
+        return execute(gameId, game -> {
+            if (!game.isFinished()) {
+                validateCurrentPlayerAction(game, playerId);
+            }
+            return engine.roll(game);
+        });
     }
 
     /**
      * Hrac si potiahne kartu.
      */
     @Transactional
-    public TurnResponse drawCard(String gameId) {
-        return execute(gameId, engine::drawCard);
+    public TurnResponse drawCard(String gameId, UUID playerId) {
+        return execute(gameId, game -> {
+            validateCurrentPlayerAction(game, playerId);
+            return engine.drawCard(game);
+        });
     }
 
     /**
@@ -199,5 +215,38 @@ public class GameService {
                 throw new IllegalArgumentException("Meno hraca uz existuje");
             }
         }
+    }
+
+    /**
+     * Overi, ze request obsahuje existujuceho a aktivneho hraca.
+     */
+    private Player validatePlayerAction(Game game, UUID playerId) {
+        if (playerId == null) {
+            throw new IllegalArgumentException("ID hraca je povinne");
+        }
+
+        Player player = game.getPlayerById(playerId);
+        if (player == null) {
+            throw new IllegalArgumentException("Hrac neexistuje v tejto hre");
+        }
+        if (!player.isInGame()) {
+            throw new IllegalStateException("Hrac uz nie je v hre");
+        }
+
+        return player;
+    }
+
+    /**
+     * Overi, ze akciu vykonava hrac, ktory je prave na tahu.
+     */
+    private Player validateCurrentPlayerAction(Game game, UUID playerId) {
+        Player player = validatePlayerAction(game, playerId);
+        Player currentPlayer = game.getCurrentPlayer();
+
+        if (!currentPlayer.getId().equals(player.getId())) {
+            throw new IllegalStateException("Nie si na tahu");
+        }
+
+        return player;
     }
 }
