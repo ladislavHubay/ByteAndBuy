@@ -1,10 +1,12 @@
 package org.hubay.byteandbuy.model.game;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import org.hubay.byteandbuy.config.GameConfig;
 import org.hubay.byteandbuy.event.GameEventCollector;
 import org.hubay.byteandbuy.model.board.Board;
+import org.hubay.byteandbuy.model.cards.Deck;
 import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.Tile;
 
@@ -21,16 +23,23 @@ public class Game {
     private final GameConfig gameConfig;
     private final List<Player> players;
     private final Board board;
+    @JsonIgnore
+    private final Deck randomDeck;
+    @JsonIgnore
+    private final Deck financeDeck;
     @Setter
     private int currentPlayerIndex;
     private int lastDice;
     @Setter
     private GameState state;
 
-    public Game(GameConfig gameConfig, List<Player> players, Board board, int currentPlayerIndex) {
+    public Game(GameConfig gameConfig, List<Player> players, Board board, int currentPlayerIndex,
+                Deck randomDeck, Deck financeDeck) {
         this.gameConfig = gameConfig;
         this.players = players;
         this.board = board;
+        this.randomDeck = randomDeck;
+        this.financeDeck = financeDeck;
         this.currentPlayerIndex = currentPlayerIndex;
         this.state = GameState.WAITING_FOR_PLAYERS;
     }

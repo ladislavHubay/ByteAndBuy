@@ -34,7 +34,9 @@ public class GameSnapshotMapper {
                 game.getLastDice(),
                 game.getState(),
                 players,
-                tileOwnerships
+                tileOwnerships,
+                game.getRandomDeck().toSnapshot(),
+                game.getFinanceDeck().toSnapshot()
         );
     }
 

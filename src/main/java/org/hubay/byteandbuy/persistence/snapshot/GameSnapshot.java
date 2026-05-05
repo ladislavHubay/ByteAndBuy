@@ -19,13 +19,18 @@ public class GameSnapshot {
     private GameState state;
     private List<PlayerSnapshot> players;
     private List<TileOwnershipSnapshot> tileOwnerships;
+    private DeckSnapshot randomDeck;
+    private DeckSnapshot financeDeck;
 
     public GameSnapshot(int currentPlayerIndex, int lastDice, GameState state,
-                        List<PlayerSnapshot> players, List<TileOwnershipSnapshot> tileOwnerships) {
+                        List<PlayerSnapshot> players, List<TileOwnershipSnapshot> tileOwnerships,
+                        DeckSnapshot randomDeck, DeckSnapshot financeDeck) {
         this.currentPlayerIndex = currentPlayerIndex;
         this.lastDice = lastDice;
         this.state = state;
         this.players = players;
         this.tileOwnerships = tileOwnerships;
+        this.randomDeck = randomDeck;
+        this.financeDeck = financeDeck;
     }
 }

@@ -33,7 +33,7 @@ public class ServerTile extends AbstractOwnableTile{
 
         if (getOwner() != player) {
             int propertyCount = countPlayerProperties(player, game);
-            int totalRent = rent * propertyCount;
+            int totalRent = Math.min(player.getMoney(), rent * propertyCount);
 
             return new TileActionType(TileResult.PAY_RENT, price, totalRent, getOwner(), null);
         }

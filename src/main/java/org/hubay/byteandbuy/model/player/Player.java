@@ -34,10 +34,10 @@ public class Player {
     }
 
     /**
-     * Skontroluje ci ma hrac dostatocne financne prostriedky na transakciu.
+     * Skontroluje ci ma hrac dostatocne financne prostriedky na nakup.
      */
-    public boolean canAfford(int amount) {
-        return this.money >= amount;
+    public boolean canBuy(int price) {
+        return this.money > price;
     }
 
     /**

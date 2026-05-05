@@ -1,5 +1,8 @@
 package org.hubay.byteandbuy.model.cards;
 
+import org.hubay.byteandbuy.persistence.snapshot.CardSnapshot;
+import org.hubay.byteandbuy.persistence.snapshot.DeckSnapshot;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +19,11 @@ public class Deck {
         shuffle();
     }
 
+    public Deck(List<Card> cards, int currentIndex) {
+        this.cards = new ArrayList<>(cards);
+        this.currentIndex = currentIndex;
+    }
+
     /**
      * Potiahne kartu. Po vystriedani vsetkych kariet sa balicek zamiesa
      * a taha sa znovu z pomiesaneho balicka.
@@ -27,6 +35,19 @@ public class Deck {
         }
 
         return cards.get(currentIndex++);
+    }
+
+    /**
+     * Vytvori snapshot balicka vratane aktualneho poradia kariet.
+     */
+    public DeckSnapshot toSnapshot() {
+        List<CardSnapshot> cardSnapshots = new ArrayList<>();
+
+        for (Card card : cards) {
+            cardSnapshots.add(card.toSnapshot());
+        }
+
+        return new DeckSnapshot(cardSnapshots, currentIndex);
     }
 
     /**

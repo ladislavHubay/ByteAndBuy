@@ -6,6 +6,8 @@ import org.hubay.byteandbuy.model.board.Board;
 import org.hubay.byteandbuy.model.cards.*;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
+import org.hubay.byteandbuy.persistence.snapshot.CardSnapshot;
+import org.hubay.byteandbuy.persistence.snapshot.DeckSnapshot;
 import org.hubay.byteandbuy.persistence.snapshot.GameSnapshot;
 import org.hubay.byteandbuy.persistence.snapshot.PlayerSnapshot;
 import org.hubay.byteandbuy.model.tiles.*;
@@ -35,7 +37,9 @@ public class GameFactory {
      * Vytvori prazdnu hru bez hracov.
      */
     public Game createEmptyGame() {
-        return createGame(new ArrayList<>());
+        Deck randomDeck = createCardsWithRandomEvents();
+        Deck financeDeck = createCardsWithFinancialTransactions();
+        return createGame(new ArrayList<>(), randomDeck, financeDeck);
     }
 
     /**
@@ -55,22 +59,22 @@ public class GameFactory {
             return createEmptyGame();
         }
 
-        return createGame(createPlayers(snapshot.getPlayers()));
+        Deck randomDeck = restoreOrCreateRandomDeck(snapshot.getRandomDeck());
+        Deck financeDeck = restoreOrCreateFinanceDeck(snapshot.getFinanceDeck());
+
+        return createGame(createPlayers(snapshot.getPlayers()), randomDeck, financeDeck);
     }
 
     /**
      * Vytvori hru z DB (snapshotu).
      */
-    private Game createGame(List<Player> players) {
-        Deck randomDeck = createCardsWithRandomEvents();
-        Deck financeDeck = createCardsWithFinancialTransactions();
-
+    private Game createGame(List<Player> players, Deck randomDeck, Deck financeDeck) {
         Tile startTile = new StartTile(START_POSITION, "START");
         List<Tile> tiles = createTiles(randomDeck, financeDeck, startTile);
 
         Board board = new Board(tiles, startTile);
 
-        return new Game(config, players, board, START_POSITION);
+        return new Game(config, players, board, START_POSITION, randomDeck, financeDeck);
     }
 
     /**
@@ -101,6 +105,74 @@ public class GameFactory {
         );
 
         return new Deck(financialTransactionCards);
+    }
+
+    /**
+     * Obnovi balicek nahodnych udalosti, alebo vytvori novy ak snapshot este deck neobsahuje.
+     */
+    private Deck restoreOrCreateRandomDeck(DeckSnapshot snapshot) {
+        if (snapshot == null || snapshot.getCards() == null) {
+            return createCardsWithRandomEvents();
+        }
+
+        return restoreDeck(snapshot);
+    }
+
+    /**
+     * Obnovi financny balicek, alebo vytvori novy ak snapshot este deck neobsahuje.
+     */
+    private Deck restoreOrCreateFinanceDeck(DeckSnapshot snapshot) {
+        if (snapshot == null || snapshot.getCards() == null) {
+            return createCardsWithFinancialTransactions();
+        }
+
+        return restoreDeck(snapshot);
+    }
+
+    /**
+     * Obnovi poradie kariet a aktualnu poziciu v balicku.
+     */
+    private Deck restoreDeck(DeckSnapshot snapshot) {
+        List<Card> cards = new ArrayList<>();
+
+        for (CardSnapshot cardSnapshot : snapshot.getCards()) {
+            cards.add(restoreCard(cardSnapshot));
+        }
+
+        return new Deck(cards, snapshot.getCurrentIndex());
+    }
+
+    /**
+     * Obnovi kartu podla typu a parametrov ulozenych v snapshote.
+     */
+    private Card restoreCard(CardSnapshot snapshot) {
+        return switch (snapshot.getKind()) {
+            case MONEY -> new MoneyCard(snapshot.getId(), snapshot.getAmount(), snapshot.getDescription());
+            case MOVE_STEPS -> new MoveStepsCard(
+                    snapshot.getId(),
+                    snapshot.getSteps(),
+                    snapshot.getDescription(),
+                    Boolean.TRUE.equals(snapshot.getApplyBonusStart())
+            );
+            case MOVE_TO_POSITION -> new MoveToPositionCard(
+                    snapshot.getId(),
+                    snapshot.getPosition(),
+                    snapshot.getDescription(),
+                    Boolean.TRUE.equals(snapshot.getApplyBonusStart())
+            );
+            case GO_TO_JAIL -> new GoToJailCard(
+                    snapshot.getId(),
+                    snapshot.getPosition(),
+                    snapshot.getDescription(),
+                    Boolean.TRUE.equals(snapshot.getApplyBonusStart())
+            );
+            case TELEPORT -> new TeleportCard(
+                    snapshot.getId(),
+                    snapshot.getDescription(),
+                    Boolean.TRUE.equals(snapshot.getApplyBonusStart()),
+                    random
+            );
+        };
     }
 
     /**

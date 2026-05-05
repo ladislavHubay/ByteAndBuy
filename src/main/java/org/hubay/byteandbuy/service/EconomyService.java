@@ -12,28 +12,36 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class EconomyService {
+    private final PlayerStateService playerStateService;
+
+    public EconomyService(PlayerStateService playerStateService) {
+        this.playerStateService = playerStateService;
+    }
+
     /**
      * Vykona nakup policka na ktorom hrac stoji
      * ak su splnene vsetky podmienky.
      */
     public void buyProperty(Game game, Player player) {
         if (!game.isWaitingForBuy()) {
-            throw new IllegalStateException("No decision expected");
+            throw new IllegalStateException("Neocakava sa ziadne rozhodnutie.");
         }
 
         Tile tile = game.getCurrentTile(player);
 
         if (!(tile instanceof Buyable buyable)) {
-            throw new IllegalStateException("Tile is not buyable");
+            throw new IllegalStateException("Policko nie je mozne kupit.");
         }
 
         int price = calculateFinalPrice(game, player, buyable);
 
-        if (player.canAfford(price)) {
+        if (player.canBuy(price)) {
             player.pay(price);
             buyable.setOwner(player);
 
             game.getEventCollector().add(player.getName() + " kupil " + tile.getName() + " za " + price);
+
+            playerStateService.checkBankruptcy(game, player);
         } else {
             game.getEventCollector().add("Nemas dost na ucte");
         }
