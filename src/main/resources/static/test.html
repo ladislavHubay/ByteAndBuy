@@ -12,12 +12,20 @@
 
 <p><b>Game ID:</b> <span id="gameId"></span></p>
 
+<label for="gameIdInput"></label><input id="gameIdInput" placeholder="Zadaj Game ID">
+<button onclick="setGameId()">Použiť ID</button>
+
 <hr>
 
 <h3>Lobby</h3>
 <label for="playerName"></label><input id="playerName" placeholder="Meno hraca">
 <button onclick="joinGame()">Join</button>
 <button onclick="startGame()">Start</button>
+
+<p>
+    <b>Hrac:</b>
+    <label for="playerId"></label><select id="playerId"></select>
+</p>
 
 <hr>
 
@@ -35,12 +43,63 @@
 
 <script>
     let gameId = null;
-    const baseUrl = "http://localhost:8080/game";
-    // http://localhost:8080/test.html
+    let players = [];
+    const baseUrl = `http://${location.hostname}:8080/game`;
 
     function setOutput(data) {
         document.getElementById("output").textContent =
             JSON.stringify(data, null, 2);
+    }
+
+    function updatePlayersFrom(data) {
+        if (Array.isArray(data.players)) {
+            players = data.players;
+        } else if (data.id && data.name) {
+            const existingIndex = players.findIndex(player => player.id === data.id);
+            if (existingIndex >= 0) {
+                players[existingIndex] = data;
+            } else {
+                players.push(data);
+            }
+        }
+
+        renderPlayerSelect();
+    }
+
+    function renderPlayerSelect() {
+        const selectedPlayerId = document.getElementById("playerId").value;
+        const activePlayers = players.filter(player => player.inGame !== false);
+        document.getElementById("playerId").innerHTML = players
+            .filter(player => player.inGame !== false)
+            .map(player => `<option value="${player.id}">${player.name}</option>`)
+            .join("");
+
+        if (activePlayers.some(player => player.id === selectedPlayerId)) {
+            document.getElementById("playerId").value = selectedPlayerId;
+        }
+    }
+
+    function getSelectedPlayerId() {
+        const playerId = document.getElementById("playerId").value;
+        if (!playerId) {
+            alert("Vyber hraca");
+            return null;
+        }
+
+        return playerId;
+    }
+
+    function playerActionOptions() {
+        const playerId = getSelectedPlayerId();
+        if (!playerId) return null;
+
+        return {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ playerId })
+        };
     }
 
     async function request(url, options = {}) {
@@ -92,6 +151,7 @@
         });
 
         playerNameInput.value = "";
+        updatePlayersFrom(data);
         setOutput(data);
     }
 
@@ -99,34 +159,51 @@
         if (!requireGame()) return;
 
         const data = await request(`${baseUrl}/${gameId}/start`, { method: "POST" });
+        updatePlayersFrom(data);
         setOutput(data);
     }
 
     async function roll() {
         if (!requireGame()) return;
 
-        const data = await request(`${baseUrl}/${gameId}/roll`, { method: "POST" });
+        const options = playerActionOptions();
+        if (!options) return;
+
+        const data = await request(`${baseUrl}/${gameId}/roll`, options);
+        updatePlayersFrom(data);
         setOutput(data);
     }
 
     async function draw() {
         if (!requireGame()) return;
 
-        const data = await request(`${baseUrl}/${gameId}/draw`, { method: "POST" });
+        const options = playerActionOptions();
+        if (!options) return;
+
+        const data = await request(`${baseUrl}/${gameId}/draw`, options);
+        updatePlayersFrom(data);
         setOutput(data);
     }
 
     async function buy() {
         if (!requireGame()) return;
 
-        const data = await request(`${baseUrl}/${gameId}/buy`, { method: "POST" });
+        const options = playerActionOptions();
+        if (!options) return;
+
+        const data = await request(`${baseUrl}/${gameId}/buy`, options);
+        updatePlayersFrom(data);
         setOutput(data);
     }
 
     async function skip() {
         if (!requireGame()) return;
 
-        const data = await request(`${baseUrl}/${gameId}/skip`, { method: "POST" });
+        const options = playerActionOptions();
+        if (!options) return;
+
+        const data = await request(`${baseUrl}/${gameId}/skip`, options);
+        updatePlayersFrom(data);
         setOutput(data);
     }
 
@@ -134,14 +211,33 @@
         if (!requireGame()) return;
 
         const data = await request(`${baseUrl}/${gameId}/state`);
+        updatePlayersFrom(data);
         setOutput(data);
     }
 
     async function leaveGame() {
         if (!requireGame()) return;
 
-        const data = await request(`${baseUrl}/${gameId}/leave`, { method: "POST" });
+        const options = playerActionOptions();
+        if (!options) return;
+
+        const data = await request(`${baseUrl}/${gameId}/leave`, options);
+        updatePlayersFrom(data);
         setOutput(data);
+    }
+
+    function setGameId() {
+        const input = document.getElementById("gameIdInput").value.trim();
+
+        if (!input) {
+            alert("Zadaj Game ID");
+            return;
+        }
+
+        gameId = input;
+        document.getElementById("gameId").textContent = gameId;
+
+        setOutput({ message: "Game ID nastavené", gameId });
     }
 </script>
 
