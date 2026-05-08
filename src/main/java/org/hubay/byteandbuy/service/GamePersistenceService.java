@@ -4,6 +4,8 @@ import org.hubay.byteandbuy.entity.GameEntity;
 import org.hubay.byteandbuy.repository.GameRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 /**
  * Poskytuje jednoduche API pre ukladanie a nacitanie GameEntity.
  */
@@ -25,8 +27,7 @@ public class GamePersistenceService {
     /**
      * Najde a nacita hru podla ID.
      */
-    public GameEntity get(String id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Game not found"));
+    public GameEntity get(UUID id) {
+        return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Hra sa nenasla"));
     }
 }

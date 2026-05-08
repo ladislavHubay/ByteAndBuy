@@ -33,8 +33,8 @@ public class Game {
     @Setter
     private GameState state;
 
-    public Game(GameConfig gameConfig, List<Player> players, Board board, int currentPlayerIndex,
-                Deck randomDeck, Deck financeDeck) {
+    public Game(GameConfig gameConfig, List<Player> players, Board board,
+                int currentPlayerIndex, Deck randomDeck, Deck financeDeck) {
         this.gameConfig = gameConfig;
         this.players = players;
         this.board = board;

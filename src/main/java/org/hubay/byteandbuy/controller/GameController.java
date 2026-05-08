@@ -8,6 +8,8 @@ import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.service.GameService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 /**
  * REST controller pre endpointy pre riadenie hry.
  */
@@ -21,17 +23,17 @@ public class GameController {
     }
 
     @PostMapping("/{gameId}/buy")
-    public TurnResponse buyProperty(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+    public TurnResponse buyProperty(@PathVariable UUID gameId, @RequestBody PlayerActionRequest request) {
         return gameService.buyProperty(gameId, request.getPlayerId());
     }
 
     @PostMapping("/{gameId}/skip")
-    public TurnResponse skip(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+    public TurnResponse skip(@PathVariable UUID gameId, @RequestBody PlayerActionRequest request) {
         return gameService.skipPurchase(gameId, request.getPlayerId());
     }
 
     @PostMapping("/{gameId}/leave")
-    public Game leaveGame(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+    public Game leaveGame(@PathVariable UUID gameId, @RequestBody PlayerActionRequest request) {
         return gameService.leaveGame(gameId, request.getPlayerId());
     }
 
@@ -41,27 +43,27 @@ public class GameController {
     }
 
     @PostMapping("/{gameId}/join")
-    public PlayerSummary joinGame(@PathVariable String gameId, @RequestBody JoinGameRequest request) {
+    public PlayerSummary joinGame(@PathVariable UUID gameId, @RequestBody JoinGameRequest request) {
         return gameService.joinGame(gameId, request.getPlayerName());
     }
 
     @PostMapping("/{gameId}/start")
-    public Game startGame(@PathVariable String gameId) {
+    public Game startGame(@PathVariable UUID gameId) {
         return gameService.startGame(gameId);
     }
 
     @PostMapping("/{gameId}/roll")
-    public TurnResponse roll(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+    public TurnResponse roll(@PathVariable UUID gameId, @RequestBody PlayerActionRequest request) {
         return gameService.roll(gameId, request.getPlayerId());
     }
 
     @PostMapping("/{gameId}/draw")
-    public TurnResponse drawCard(@PathVariable String gameId, @RequestBody PlayerActionRequest request) {
+    public TurnResponse drawCard(@PathVariable UUID gameId, @RequestBody PlayerActionRequest request) {
         return gameService.drawCard(gameId, request.getPlayerId());
     }
 
     @GetMapping("/{gameId}/state")
-    public Game getState(@PathVariable String gameId) {
+    public Game getState(@PathVariable UUID gameId) {
         return gameService.getGame(gameId);
     }
 }

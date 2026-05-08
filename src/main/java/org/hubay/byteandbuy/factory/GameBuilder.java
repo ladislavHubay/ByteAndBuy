@@ -20,17 +20,30 @@ import java.util.List;
  * Inicializuje hracov, hernu dosku, balicky kariet - vytvory celu hru.
  */
 @Component
-public class GameFactory {
+public class GameBuilder {
     private final RandomConfig random;
     private final GameConfig config;
     private final PlayerFactory playerFactory;
     private static final int START_POSITION = 0;
     private static final int JAIL_POSITION = 13;
 
-    public GameFactory(RandomConfig random, GameConfig config, PlayerFactory playerFactory) {
+    public GameBuilder(RandomConfig random, GameConfig config, PlayerFactory playerFactory) {
         this.random = random;
         this.config = config;
         this.playerFactory = playerFactory;
+    }
+
+    /**
+     * Vytvori hru (Game).
+     * Na vstupnych parametroch zavisi ci bude hra nova hra alebo existujuca - nacitana z DB.
+     */
+    public Game buildGame(List<Player> players, Deck randomDeck, Deck financeDeck) {
+        Tile startTile = new StartTile(START_POSITION, "START");
+        List<Tile> tiles = createTiles(randomDeck, financeDeck, startTile);
+
+        Board board = new Board(tiles, startTile);
+
+        return new Game(config, players, board, START_POSITION, randomDeck, financeDeck);
     }
 
     /**
@@ -39,7 +52,7 @@ public class GameFactory {
     public Game createEmptyGame() {
         Deck randomDeck = createCardsWithRandomEvents();
         Deck financeDeck = createCardsWithFinancialTransactions();
-        return createGame(new ArrayList<>(), randomDeck, financeDeck);
+        return buildGame(new ArrayList<>(), randomDeck, financeDeck);
     }
 
     /**
@@ -62,19 +75,7 @@ public class GameFactory {
         Deck randomDeck = restoreOrCreateRandomDeck(snapshot.getRandomDeck());
         Deck financeDeck = restoreOrCreateFinanceDeck(snapshot.getFinanceDeck());
 
-        return createGame(createPlayers(snapshot.getPlayers()), randomDeck, financeDeck);
-    }
-
-    /**
-     * Vytvori hru z DB (snapshotu).
-     */
-    private Game createGame(List<Player> players, Deck randomDeck, Deck financeDeck) {
-        Tile startTile = new StartTile(START_POSITION, "START");
-        List<Tile> tiles = createTiles(randomDeck, financeDeck, startTile);
-
-        Board board = new Board(tiles, startTile);
-
-        return new Game(config, players, board, START_POSITION, randomDeck, financeDeck);
+        return buildGame(createPlayers(snapshot.getPlayers()), randomDeck, financeDeck);
     }
 
     /**

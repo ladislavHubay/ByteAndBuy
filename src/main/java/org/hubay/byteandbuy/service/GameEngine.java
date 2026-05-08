@@ -6,9 +6,11 @@ import org.hubay.byteandbuy.event.GameEventCollector;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.Tile;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Trieda orchestruje priebeh tahu hraca.
@@ -22,8 +24,16 @@ public class GameEngine {
     private final MovementService movementService;
     private final EconomyService economyService;
     private final JailService jailService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public GameEngine(Random random, TileActionService tileActionService, PlayerStateService playerStateService, TurnService turnService, MovementService movementService, EconomyService economyService, JailService jailService) {
+    public GameEngine(Random random,
+                      TileActionService tileActionService,
+                      PlayerStateService playerStateService,
+                      TurnService turnService,
+                      MovementService movementService,
+                      EconomyService economyService,
+                      JailService jailService,
+                      SimpMessagingTemplate messagingTemplate) {
         this.random = random;
         this.tileActionService = tileActionService;
         this.playerStateService = playerStateService;
@@ -31,6 +41,7 @@ public class GameEngine {
         this.movementService = movementService;
         this.economyService = economyService;
         this.jailService = jailService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     /**
@@ -41,8 +52,8 @@ public class GameEngine {
      * - posunie hraca na potrebnu poziciu a vyhodnoti efekt policka
      * - ukonci tah hraca
      */
-    public TurnResponse roll(Game game) {
-        GameEventCollector collector = new GameEventCollector();
+    public TurnResponse roll(UUID id, Game game) {
+        GameEventCollector collector = new GameEventCollector(messagingTemplate, id);
         game.setEventCollector(collector);
         TurnResponse response = new TurnResponse();
 
@@ -53,7 +64,7 @@ public class GameEngine {
         }
 
         if (!game.isPlaying()) {
-            throw new IllegalStateException("Decision expected");
+            throw new IllegalStateException("Ocakava sa rozhodnutie");
         }
 
         Player player = game.getCurrentPlayer();
@@ -88,12 +99,12 @@ public class GameEngine {
     /**
      * Spracuje rozhodnutie hraca kupit policko.
      */
-    public TurnResponse buyProperty(Game game) {
+    public TurnResponse buyProperty(UUID id, Game game) {
         if (!game.isWaitingForBuy()) {
-            throw new IllegalStateException("No decision expected");
+            throw new IllegalStateException("Neocakava sa ziadne rozhodnutie");
         }
 
-        GameEventCollector collector = new GameEventCollector();
+        GameEventCollector collector = new GameEventCollector(messagingTemplate, id);
         game.setEventCollector(collector);
         TurnResponse response = new TurnResponse();
         Player player = game.getCurrentPlayer();
@@ -112,12 +123,12 @@ public class GameEngine {
     /**
      * Spracuje rozhodnutie hraca nekupit policko.
      */
-    public TurnResponse skipPurchase(Game game) {
+    public TurnResponse skipPurchase(UUID id, Game game) {
         if (!game.isWaitingForBuy()) {
-            throw new IllegalStateException("No decision expected");
+            throw new IllegalStateException("Neocakava sa ziadne rozhodnutie");
         }
 
-        GameEventCollector collector = new GameEventCollector();
+        GameEventCollector collector = new GameEventCollector(messagingTemplate, id);
         game.setEventCollector(collector);
         TurnResponse response = new TurnResponse();
         Player player = game.getCurrentPlayer();
@@ -154,15 +165,15 @@ public class GameEngine {
     /**
      * Spracuje tahanie karty ak hrac stoji na policku kde sa ma potiahnut karta.
      */
-    public TurnResponse drawCard(Game game) {
+    public TurnResponse drawCard(UUID id, Game game) {
         if (!game.isWaitingForCard()) {
-            throw new IllegalStateException("No decision expected");
+            throw new IllegalStateException("Neocakava sa ziadne rozhodnutie");
         }
 
         Player player = game.getCurrentPlayer();
         TurnResponse response = new TurnResponse();
 
-        GameEventCollector collector = new GameEventCollector();
+        GameEventCollector collector = new GameEventCollector(messagingTemplate, id);
         game.setEventCollector(collector);
 
         response.setCurrentPlayer(player.getName());

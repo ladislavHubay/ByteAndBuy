@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hubay.byteandbuy.model.game.GameState;
 
+import java.util.UUID;
+
 /**
  * Trieda reprezentuje ulozenu hru v databaze.
  * Obsahuje iba data potrebne na ulozenie.
@@ -19,7 +21,7 @@ public class GameEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
     /**
      * Generuje sa automaticky pre zabespecenie ze sa subezne neulozi viac hier do DB.
      */

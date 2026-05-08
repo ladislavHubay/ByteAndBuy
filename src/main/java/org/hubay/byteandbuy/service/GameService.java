@@ -5,7 +5,7 @@ import org.hubay.byteandbuy.dto.PlayerSummary;
 import org.hubay.byteandbuy.dto.PlayerSummaryMapper;
 import org.hubay.byteandbuy.entity.GameEntity;
 import org.hubay.byteandbuy.exception.ConcurrentGameUpdateException;
-import org.hubay.byteandbuy.factory.GameFactory;
+import org.hubay.byteandbuy.factory.GameBuilder;
 import org.hubay.byteandbuy.dto.TurnResponse;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
@@ -21,21 +21,21 @@ import java.util.function.Function;
 
 /**
  * Hlavna aplikcna service trieda.
- * Prepaja vytvorenie objektov (GameFactory), hernu logiku (GameEngine) a DB vrstvu.
+ * Prepaja vytvorenie objektov (GameBuilder), hernu logiku (GameEngine) a DB vrstvu.
  */
 @Getter
 @Service
 public class GameService {
-    private final GameFactory gameFactory;
+    private final GameBuilder gameBuilder;
     private final GamePersistenceService persistenceService;
     private final SnapshotSerializer serializer;
     private final GameEngine engine;
 
-    public GameService(GameFactory gameFactory,
+    public GameService(GameBuilder gameBuilder,
                        GamePersistenceService persistenceService,
                        SnapshotSerializer serializer,
                        GameEngine engine) {
-        this.gameFactory = gameFactory;
+        this.gameBuilder = gameBuilder;
         this.persistenceService = persistenceService;
         this.serializer = serializer;
         this.engine = engine;
@@ -45,14 +45,14 @@ public class GameService {
      * Vytvory novu prazdnu hru a ulozi do DB.
      */
     public String createGame() {
-        Game game = gameFactory.createEmptyGame();
-        return persistenceService.save(toEntity(game)).getId();
+        Game game = gameBuilder.createEmptyGame();
+        return persistenceService.save(toEntity(game)).getId().toString();
     }
 
     /**
      * Nacita hru z DB a vytvori objekt Game.
      */
-    public Game getGame(String gameId) {
+    public Game getGame(UUID gameId) {
         GameEntity entity = persistenceService.get(gameId);
         return loadGame(entity);
     }
@@ -61,10 +61,10 @@ public class GameService {
      * Hrac kupi policko na ktorom stoji.
      */
     @Transactional
-    public TurnResponse buyProperty(String gameId, UUID playerId) {
+    public TurnResponse buyProperty(UUID gameId, UUID playerId) {
         return execute(gameId, game -> {
             validateCurrentPlayerAction(game, playerId);
-            return engine.buyProperty(game);
+            return engine.buyProperty(gameId, game);
         });
     }
 
@@ -73,10 +73,10 @@ public class GameService {
      * Hrac nekupi policko na ktorom stoji.
      */
     @Transactional
-    public TurnResponse skipPurchase(String gameId, UUID playerId) {
+    public TurnResponse skipPurchase(UUID gameId, UUID playerId) {
         return execute(gameId, game -> {
             validateCurrentPlayerAction(game, playerId);
-            return engine.skipPurchase(game);
+            return engine.skipPurchase(gameId, game);
         });
     }
 
@@ -84,7 +84,7 @@ public class GameService {
      * Hrac sa odpoji z hry (napriklad bankrot alebo sa sam odpoji).
      */
     @Transactional
-    public Game leaveGame(String gameId, UUID playerId) {
+    public Game leaveGame(UUID gameId, UUID playerId) {
         return execute(gameId, game -> {
             Player player = validatePlayerAction(game, playerId);
             engine.leaveGame(game, player);
@@ -96,12 +96,12 @@ public class GameService {
      * Heac hodi kockou a posunie sa.
      */
     @Transactional
-    public TurnResponse roll(String gameId, UUID playerId) {
+    public TurnResponse roll(UUID gameId, UUID playerId) {
         return execute(gameId, game -> {
             if (!game.isFinished()) {
                 validateCurrentPlayerAction(game, playerId);
             }
-            return engine.roll(game);
+            return engine.roll(gameId, game);
         });
     }
 
@@ -109,10 +109,10 @@ public class GameService {
      * Hrac si potiahne kartu.
      */
     @Transactional
-    public TurnResponse drawCard(String gameId, UUID playerId) {
+    public TurnResponse drawCard(UUID gameId, UUID playerId) {
         return execute(gameId, game -> {
             validateCurrentPlayerAction(game, playerId);
-            return engine.drawCard(game);
+            return engine.drawCard(gameId, game);
         });
     }
 
@@ -120,11 +120,11 @@ public class GameService {
      * Prida hraca do hry.
      */
     @Transactional
-    public PlayerSummary joinGame(String gameId, String playerName) {
+    public PlayerSummary joinGame(UUID gameId, String playerName) {
         return execute(gameId, game -> {
             validatePlayerCanJoin(game, playerName);
 
-            Player player = gameFactory.createPlayer(playerName.trim());
+            Player player = gameBuilder.createPlayer(playerName.trim());
             game.addPlayer(player);
             return PlayerSummaryMapper.toSummary(player);
         });
@@ -134,13 +134,13 @@ public class GameService {
      * Spusti hru.
      */
     @Transactional
-    public Game startGame(String gameId) {
+    public Game startGame(UUID gameId) {
         return execute(gameId, game -> {
             if (!game.isWaitingForPlayers()) {
-                throw new IllegalStateException("Game is not in lobby state");
+                throw new IllegalStateException("Hra necaka na pripojenie hracov");
             }
             if (!game.canStart()) {
-                throw new IllegalStateException("Not enough players to start game");
+                throw new IllegalStateException("Nie je dost hracov pripojenych na zacatie hry");
             }
 
             game.resumePlaying();
@@ -171,7 +171,7 @@ public class GameService {
      */
     private Game loadGame(GameEntity entity) {
         GameSnapshot snapshot = serializer.fromJson(entity.getSnapshot());
-        Game game = gameFactory.createGame(snapshot);
+        Game game = gameBuilder.createGame(snapshot);
         GameSnapshotMapper.applySnapshot(game, snapshot);
         return game;
     }
@@ -182,7 +182,7 @@ public class GameService {
      * - vykonanie akcie (buyProperty, skipPurchase, roll, ...)
      * - ulozenie zmeny stavu
      */
-    private <T> T execute(String gameId, Function<Game, T> action) {
+    private <T> T execute(UUID gameId, Function<Game, T> action) {
         try {
             GameEntity entity = persistenceService.get(gameId);
             Game game = loadGame(entity);
@@ -191,10 +191,7 @@ public class GameService {
             persistenceService.save(entity);
             return result;
         } catch (ObjectOptimisticLockingFailureException ex) {
-            throw new ConcurrentGameUpdateException(
-                    "Hra bola medzicasom zmenena inym requestom. Skus akciu zopakovat.",
-                    ex
-            );
+            throw new ConcurrentGameUpdateException("Hra bola medzicasom zmenena inym requestom. Skus akciu zopakovat.", ex);
         }
     }
 
@@ -239,14 +236,12 @@ public class GameService {
     /**
      * Overi, ze akciu vykonava hrac, ktory je prave na tahu.
      */
-    private Player validateCurrentPlayerAction(Game game, UUID playerId) {
+    private void validateCurrentPlayerAction(Game game, UUID playerId) {
         Player player = validatePlayerAction(game, playerId);
         Player currentPlayer = game.getCurrentPlayer();
 
         if (!currentPlayer.getId().equals(player.getId())) {
             throw new IllegalStateException("Nie si na tahu");
         }
-
-        return player;
     }
 }
