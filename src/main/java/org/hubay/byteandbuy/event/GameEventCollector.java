@@ -26,6 +26,6 @@ public class GameEventCollector {
      */
     public void add(String event) {
         events.add(event);
-        messagingTemplate.convertAndSend("/topic/game/" + gameId, event);
+        messagingTemplate.convertAndSend(GameTopics.game(gameId), event);
     }
 }

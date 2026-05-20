@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.hubay.byteandbuy.dto.PlayerSummary;
 import org.hubay.byteandbuy.dto.PlayerSummaryMapper;
 import org.hubay.byteandbuy.entity.GameEntity;
+import org.hubay.byteandbuy.event.GameMessagePublisher;
 import org.hubay.byteandbuy.exception.ConcurrentGameUpdateException;
 import org.hubay.byteandbuy.factory.GameBuilder;
 import org.hubay.byteandbuy.dto.TurnResponse;
@@ -30,15 +31,18 @@ public class GameService {
     private final GamePersistenceService persistenceService;
     private final SnapshotSerializer serializer;
     private final GameEngine engine;
+    private final GameMessagePublisher messagePublisher;
 
     public GameService(GameBuilder gameBuilder,
                        GamePersistenceService persistenceService,
                        SnapshotSerializer serializer,
-                       GameEngine engine) {
+                       GameEngine engine,
+                       GameMessagePublisher messagePublisher) {
         this.gameBuilder = gameBuilder;
         this.persistenceService = persistenceService;
         this.serializer = serializer;
         this.engine = engine;
+        this.messagePublisher = messagePublisher;
     }
 
     /**
@@ -126,6 +130,7 @@ public class GameService {
 
             Player player = gameBuilder.createPlayer(playerName.trim());
             game.addPlayer(player);
+            messagePublisher.publishPlayerJoined(gameId);
             return PlayerSummaryMapper.toSummary(player);
         });
     }
@@ -145,6 +150,7 @@ public class GameService {
 
             game.resumePlaying();
             game.setCurrentPlayerIndex(0);
+            messagePublisher.publishGameStarted(gameId);
             return game;
         });
     }
