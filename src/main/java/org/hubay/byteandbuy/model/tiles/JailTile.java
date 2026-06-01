@@ -8,7 +8,7 @@ import org.hubay.byteandbuy.model.player.Player;
  */
 public class JailTile extends Tile {
     public JailTile(int position, String name) {
-        super(position, name);
+        super(position, name, TileType.JAIL);
     }
 
     /**

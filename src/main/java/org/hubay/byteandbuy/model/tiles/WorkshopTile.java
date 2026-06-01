@@ -13,7 +13,7 @@ public class WorkshopTile extends AbstractOwnableTile{
      * Vlastnikovy dava vyhodu (zlavu) pri nakupe dalsich policok.
      */
     public WorkshopTile(int position, String name, int price) {
-        super(position, name);
+        super(position, name, TileType.WORKSHOP);
         this.price = price;
     }
 

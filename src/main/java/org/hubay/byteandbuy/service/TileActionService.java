@@ -5,6 +5,7 @@ import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.Tile;
 import org.hubay.byteandbuy.model.tiles.TileActionType;
+import org.hubay.byteandbuy.model.tiles.TileResult;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,6 +57,10 @@ public class TileActionService {
         Tile tile = game.getCurrentTile(player);
 
         TileActionType result = tile.interact(game, player);
+
+        if (result.getType() != TileResult.DRAW_CARD || result.getDeck() == null) {
+            throw new IllegalStateException("Hrac nie je na policku s moznostou tahania karty.");
+        }
 
         Card card = result.getDeck().draw();
         game.getEventCollector().add(player.getName() + " potiahol kartu " + card.getDescription());

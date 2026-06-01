@@ -17,7 +17,7 @@ public class PropertyTile extends AbstractOwnableTile{
     private final double fullGroupRentMultiplier;
 
     public PropertyTile(int position, String name, int price, int rent, PropertyGroup group, double fullGroupRentMultiplier) {
-        super(position, name);
+        super(position, name, TileType.PROPERTY);
         this.price = price;
         this.rent = rent;
         this.group = group;

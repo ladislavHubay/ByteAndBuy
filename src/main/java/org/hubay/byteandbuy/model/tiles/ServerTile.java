@@ -14,7 +14,7 @@ public class ServerTile extends AbstractOwnableTile{
     private final int rent;
 
     public ServerTile(int position, String name, int price, int baseRent) {
-        super(position, name);
+        super(position, name, TileType.SERVER);
         this.price = price;
         this.rent = baseRent;
     }

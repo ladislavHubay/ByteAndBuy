@@ -11,7 +11,7 @@ public class CardTile extends Tile{
     private final Deck deck;
 
     public CardTile(int position, String name, Deck deck) {
-        super(position, name);
+        super(position, name, TileType.CARD);
         this.deck = deck;
     }
 

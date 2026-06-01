@@ -19,6 +19,7 @@ import java.util.UUID;
 @Getter
 public class Game {
     @Setter
+    @JsonIgnore
     private transient GameEventCollector eventCollector;
     private final GameConfig gameConfig;
     private final List<Player> players;
@@ -42,6 +43,18 @@ public class Game {
         this.financeDeck = financeDeck;
         this.currentPlayerIndex = currentPlayerIndex;
         this.state = GameState.WAITING_FOR_PLAYERS;
+    }
+
+    /**
+     * Vrati collector pre udalosti hry.
+     * Ak hra vznikla mimo standardneho service flow, collector sa vytvori automaticky.
+     */
+    public GameEventCollector getEventCollector() {
+        if (eventCollector == null) {
+            eventCollector = new GameEventCollector();
+        }
+
+        return eventCollector;
     }
 
     /**
@@ -224,7 +237,7 @@ public class Game {
 
         if (passedStart && applyStartBonus) {
             player.receive(gameConfig.getStartBonus());
-            eventCollector.add(player.getName() + " ziskal " + gameConfig.getStartBonus() + " za START");
+            getEventCollector().add(player.getName() + " ziskal " + gameConfig.getStartBonus() + " za START");
         }
     }
 }

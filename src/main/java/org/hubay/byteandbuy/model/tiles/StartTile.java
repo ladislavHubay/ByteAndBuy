@@ -8,7 +8,7 @@ import org.hubay.byteandbuy.model.player.Player;
  */
 public class StartTile extends Tile {
     public StartTile(int position, String name) {
-        super(position, name);
+        super(position, name, TileType.START);
     }
 
     /**

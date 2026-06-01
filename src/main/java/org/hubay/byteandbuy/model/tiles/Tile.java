@@ -12,10 +12,12 @@ import org.hubay.byteandbuy.model.player.Player;
 public abstract class Tile {
     private final int position;
     private final String name;
+    private final TileType type;
 
-    public Tile(int position, String name) {
+    public Tile(int position, String name, TileType type) {
         this.position = position;
         this.name = name;
+        this.type = type;
     }
 
     /**
