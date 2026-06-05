@@ -2,6 +2,7 @@ package org.hubay.byteandbuy.model.tiles;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
+import lombok.Setter;
 import org.hubay.byteandbuy.model.player.Player;
 
 import java.util.ArrayList;
@@ -17,10 +18,18 @@ public class PropertyGroup {
     @JsonManagedReference
     @Getter
     private final List<PropertyTile> properties;
+    @Getter
+    @Setter
+    private int initialPrice;
+    @Getter
+    @Setter
+    private int currentPrice;
 
-    public PropertyGroup(String name) {
+    public PropertyGroup(String name, int initialPrice) {
         this.name = name;
+        this.initialPrice = initialPrice;
         this.properties = new ArrayList<>();
+        this.currentPrice = initialPrice;
     }
 
     /**
@@ -37,6 +46,10 @@ public class PropertyGroup {
      * @return true ak vlastni vsetky policka zo skupiny, false ak nie.
      */
     public boolean ownsAll(Player player) {
+        if (player == null) {
+            return false;
+        }
+
         for (PropertyTile property : properties) {
             if (property.getOwner() != player) {
                 return false;

@@ -4,7 +4,9 @@ import org.hubay.byteandbuy.model.board.Board;
 import org.hubay.byteandbuy.model.game.Game;
 import org.hubay.byteandbuy.model.player.Player;
 import org.hubay.byteandbuy.model.tiles.Buyable;
+import org.hubay.byteandbuy.model.tiles.PropertyGroup;
 import org.hubay.byteandbuy.model.tiles.Tile;
+import org.hubay.byteandbuy.persistence.snapshot.CompanySnapshot;
 import org.hubay.byteandbuy.persistence.snapshot.GameSnapshot;
 import org.hubay.byteandbuy.persistence.snapshot.PlayerSnapshot;
 import org.hubay.byteandbuy.persistence.snapshot.TileOwnershipSnapshot;
@@ -22,12 +24,14 @@ public class GameSnapshotMapper {
     public static GameSnapshot toSnapshot(Game game) {
         List<PlayerSnapshot> players = new ArrayList<>();
         List<TileOwnershipSnapshot> tileOwnerships = new ArrayList<>();
+        List<CompanySnapshot> companyPrices = new ArrayList<>();
 
         for (Player player : game.getPlayers()) {
             players.add(toSnapshot(player));
         }
 
         collectTileOwnerships(game, tileOwnerships);
+        collectCompanyPrices(game, companyPrices);
 
         return new GameSnapshot(
                 game.getCurrentPlayerIndex(),
@@ -35,6 +39,7 @@ public class GameSnapshotMapper {
                 game.getState(),
                 players,
                 tileOwnerships,
+                companyPrices,
                 game.getRandomDeck().toSnapshot(),
                 game.getFinanceDeck().toSnapshot()
         );
@@ -62,6 +67,7 @@ public class GameSnapshotMapper {
         game.setDice(snapshot.getLastDice());
         game.setState(snapshot.getState());
         applyTileOwnerships(game, snapshot.getTileOwnerships());
+        applyCompanyPrices(game, snapshot.getCompanyPrices());
     }
 
     /**
@@ -72,6 +78,15 @@ public class GameSnapshotMapper {
             if (tile instanceof Buyable buyable && buyable.getOwner() != null) {
                 tileOwnerships.add(new TileOwnershipSnapshot(tile.getPosition(), buyable.getOwner().getId()));
             }
+        }
+    }
+
+    /**
+     * Ulozi aktualne trhove ceny firiem.
+     */
+    private static void collectCompanyPrices(Game game, List<CompanySnapshot> companySnapshot) {
+        for (PropertyGroup company : game.getCompanies().getGroups()) {
+            companySnapshot.add(new CompanySnapshot(company.getName(), company.getCurrentPrice(), company.getInitialPrice()));
         }
     }
 
@@ -94,6 +109,37 @@ public class GameSnapshotMapper {
                 buyable.setOwner(owner);
             }
         }
+    }
+
+    /**
+     * Obnovi trhove ceny firiem. Ak starsi snapshot ceny neobsahuje, ostanu default hodnoty.
+     */
+    private static void applyCompanyPrices(Game game, List<CompanySnapshot> snapshots) {
+        if (snapshots == null) {
+            return;
+        }
+
+        for (CompanySnapshot snapshot : snapshots) {
+            PropertyGroup company = resolveCompany(game, snapshot.getCompanyName());
+
+            if (company != null) {
+                company.setCurrentPrice(snapshot.getCurrentPrice());
+                company.setInitialPrice(snapshot.getInitialPrice());
+            }
+        }
+    }
+
+    /**
+     * Najde firmu podla mena ulozeneho v snapshote.
+     */
+    private static PropertyGroup resolveCompany(Game game, String companyName) {
+        for (PropertyGroup company : game.getCompanies().getGroups()) {
+            if (company.getName().equals(companyName)) {
+                return company;
+            }
+        }
+
+        return null;
     }
 
     /**

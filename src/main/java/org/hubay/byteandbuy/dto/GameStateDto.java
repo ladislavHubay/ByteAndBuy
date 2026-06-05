@@ -18,12 +18,14 @@ public class GameStateDto {
     private final int lastDice;
     private final List<PlayerSummary> players;
     private final BoardStateDto board;
+    private final List<CompanyStateDto> companies;
     private final List<String> availableActions;
 
     public GameStateDto(GameState state, boolean waitingForPlayers, boolean playing,
                         boolean waitingForBuy, boolean waitingForCard, boolean finished,
                         int currentPlayerIndex, PlayerSummary currentPlayer, int lastDice,
-                        List<PlayerSummary> players, BoardStateDto board, List<String> availableActions) {
+                        List<PlayerSummary> players, BoardStateDto board,
+                        List<CompanyStateDto> companies, List<String> availableActions) {
         this.state = state;
         this.waitingForPlayers = waitingForPlayers;
         this.playing = playing;
@@ -35,6 +37,7 @@ public class GameStateDto {
         this.lastDice = lastDice;
         this.players = players;
         this.board = board;
+        this.companies = companies;
         this.availableActions = availableActions;
     }
 }

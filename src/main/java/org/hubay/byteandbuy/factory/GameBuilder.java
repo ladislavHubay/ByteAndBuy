@@ -38,12 +38,13 @@ public class GameBuilder {
      * Na vstupnych parametroch zavisi ci bude hra nova hra alebo existujuca - nacitana z DB.
      */
     public Game buildGame(List<Player> players, Deck randomDeck, Deck financeDeck) {
+        Companies companies = new Companies();
         Tile startTile = new StartTile(START_POSITION, "START");
-        List<Tile> tiles = createTiles(randomDeck, financeDeck, startTile);
+        List<Tile> tiles = createTiles(randomDeck, financeDeck, startTile, companies);
 
         Board board = new Board(tiles, startTile);
 
-        return new Game(config, players, board, START_POSITION, randomDeck, financeDeck);
+        return new Game(config, players, board, START_POSITION, randomDeck, financeDeck, companies);
     }
 
     /**
@@ -199,31 +200,35 @@ public class GameBuilder {
     /**
      * Vytvori policka na hracej doske.
      */
-    private List<Tile> createTiles(Deck randomEventsDeck, Deck financialTransactionsDeck, Tile startTile) {
+    private List<Tile> createTiles(Deck randomEventsDeck, Deck financialTransactionsDeck,
+                                   Tile startTile, Companies companies) {
         List<Tile> tiles = new ArrayList<>();
         tiles.add(startTile);
 
-        PropertyGroup firma1 = new PropertyGroup("Firma 1");
-        addPropertyGroup(tiles, firma1, 1, "policko_1", 100, 50);
-        addPropertyGroup(tiles, firma1, 2, "policko_2", 100, 50);
-        addPropertyGroup(tiles, firma1, 3, "policko_3", 100, 50);
+        PropertyGroup firma1 = new PropertyGroup("Firma 1", generateRandomGroupPrice(100));
+        addPropertyGroup(tiles, firma1, 1, "policko_1");
+        addPropertyGroup(tiles, firma1, 2, "policko_2");
+        addPropertyGroup(tiles, firma1, 3, "policko_3");
+        companies.addGroup(firma1);
 
         tiles.add(new WorkshopTile(4, "dielna_4", 100));
 
         tiles.add(new CardTile(5, "nahoda_5", randomEventsDeck));
 
-        PropertyGroup firma2 = new PropertyGroup("Firma 2");
-        addPropertyGroup(tiles, firma2, 6, "policko_6", 110, 70);
-        addPropertyGroup(tiles, firma2, 7, "policko_7", 110, 70);
-        addPropertyGroup(tiles, firma2, 8, "policko_8", 110, 70);
+        PropertyGroup firma2 = new PropertyGroup("Firma 2", generateRandomGroupPrice(100));
+        addPropertyGroup(tiles, firma2, 6, "policko_6");
+        addPropertyGroup(tiles, firma2, 7, "policko_7");
+        addPropertyGroup(tiles, firma2, 8, "policko_8");
+        companies.addGroup(firma2);
 
         tiles.add(new CardTile(9, "finance_9", financialTransactionsDeck));
 
-        PropertyGroup firma3 = new PropertyGroup("Firma 3");
-        addPropertyGroup(tiles, firma3, 10, "policko_10", 150, 80);
-        addPropertyGroup(tiles, firma3, 11, "policko_11", 150, 80);
+        PropertyGroup firma3 = new PropertyGroup("Firma 3", generateRandomGroupPrice(100));
+        addPropertyGroup(tiles, firma3, 10, "policko_10");
+        addPropertyGroup(tiles, firma3, 11, "policko_11");
+        companies.addGroup(firma3);
 
-        tiles.add(new ServerTile(12, "Serverovna_12", 150, 20));
+        tiles.add(new ServerTile(12, "Serverovna_12", 150, config.getRentForOnePropertyMultiplier()));
         tiles.add(new JailTile(13, "Vazanie_13"));
 
         tiles.add(new CardTile(14, "nahoda_14", randomEventsDeck));
@@ -235,9 +240,20 @@ public class GameBuilder {
      * Vytvori skupiny a prida do nich policka ktore patria spolu.
      */
     private void addPropertyGroup(List<Tile> tiles, PropertyGroup propertyGroup,
-                                         int position, String name, int price, int rent) {
-        PropertyTile propertyTile = new PropertyTile(position, name, price, rent, propertyGroup, config.getFullGroupRentMultiplier());
+                                         int position, String name) {
+        PropertyTile propertyTile = new PropertyTile(
+                position, name, propertyGroup, config.getFullGroupRentMultiplier(), config.getBaseRentRate()
+        );
         propertyGroup.addProperty(propertyTile);
         tiles.add(propertyTile);
+    }
+
+    /**
+     * Vygeneruje nahodnu cenu pre vsetky policka patriace do jednej skupiny.
+     * Cena sa generuje v rozsahu urcenom v application.properties.
+     */
+    private int generateRandomGroupPrice(int averagePrice){
+        return random.random().nextInt((int)(averagePrice * config.getInitialPriceMinMultiplier()),
+                (int)(averagePrice * config.getInitialPriceMaxMultiplier()) + 1);
     }
 }

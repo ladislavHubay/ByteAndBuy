@@ -11,12 +11,12 @@ import org.hubay.byteandbuy.model.player.Player;
 public class ServerTile extends AbstractOwnableTile{
     @Getter
     private final int price;
-    private final int rent;
+    private final double rentForOnePropertyMultiplier;
 
-    public ServerTile(int position, String name, int price, int baseRent) {
+    public ServerTile(int position, String name, int price, double rentForOnePropertyMultiplier) {
         super(position, name, TileType.SERVER);
         this.price = price;
-        this.rent = baseRent;
+        this.rentForOnePropertyMultiplier = rentForOnePropertyMultiplier;
     }
 
     /**
@@ -27,35 +27,33 @@ public class ServerTile extends AbstractOwnableTile{
      */
     @Override
     public TileActionType interact(Game game, Player player) {
+        int rent = Math.min(player.getMoney(), countPlayerProperties(player, game));
+
         if (getOwner() == null) {
             return new TileActionType(TileResult.WAIT_FOR_PURCHASE, price, rent, getOwner(), null);
         }
 
         if (getOwner() != player) {
-            int propertyCount = countPlayerProperties(player, game);
-            int totalRent = Math.min(player.getMoney(), rent * propertyCount);
-
-            return new TileActionType(TileResult.PAY_RENT, price, totalRent, getOwner(), null);
+            return new TileActionType(TileResult.PAY_RENT, price, rent, getOwner(), null);
         }
 
         return new TileActionType(TileResult.NOTHING, price, rent, getOwner(), null);
     }
 
     /**
-     * Spocita pocet policok ktore hrac vlastni.
-     * Pouziva sa na vypocet poplatku.
+     * Vypocita vysku poplatku.
      */
-    private int countPlayerProperties(Player player, Game game) {
-        int count = 0;
+    private Integer countPlayerProperties(Player player, Game game) {
+        double totalRent = 0;
 
         for (Tile tile : game.getBoard().getTiles()) {
             if (tile instanceof PropertyTile property) {
                 if (property.getOwner() == player) {
-                    count++;
+                    totalRent = totalRent + (property.getPrice() * rentForOnePropertyMultiplier);
                 }
             }
         }
 
-        return count;
+        return (int) totalRent;
     }
 }

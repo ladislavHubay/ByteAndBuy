@@ -8,6 +8,7 @@ import org.hubay.byteandbuy.event.GameEventCollector;
 import org.hubay.byteandbuy.model.board.Board;
 import org.hubay.byteandbuy.model.cards.Deck;
 import org.hubay.byteandbuy.model.player.Player;
+import org.hubay.byteandbuy.model.tiles.Companies;
 import org.hubay.byteandbuy.model.tiles.Tile;
 
 import java.util.List;
@@ -33,15 +34,18 @@ public class Game {
     private int lastDice;
     @Setter
     private GameState state;
+    @Getter
+    private final Companies companies;
 
     public Game(GameConfig gameConfig, List<Player> players, Board board,
-                int currentPlayerIndex, Deck randomDeck, Deck financeDeck) {
+                int currentPlayerIndex, Deck randomDeck, Deck financeDeck, Companies companies) {
         this.gameConfig = gameConfig;
         this.players = players;
         this.board = board;
         this.randomDeck = randomDeck;
         this.financeDeck = financeDeck;
         this.currentPlayerIndex = currentPlayerIndex;
+        this.companies = companies;
         this.state = GameState.WAITING_FOR_PLAYERS;
     }
 

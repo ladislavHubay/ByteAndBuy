@@ -10,14 +10,16 @@ public class TileStateDto {
     private final boolean buyable;
     private final Integer price;
     private final PlayerSummary owner;
+    private final Integer rent;
 
     public TileStateDto(int position, String name, String type, boolean buyable,
-                        Integer price, PlayerSummary owner) {
+                        Integer price, PlayerSummary owner, Integer rent) {
         this.position = position;
         this.name = name;
         this.type = type;
         this.buyable = buyable;
         this.price = price;
         this.owner = owner;
+        this.rent = rent;
     }
 }

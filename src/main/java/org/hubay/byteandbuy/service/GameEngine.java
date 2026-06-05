@@ -19,6 +19,7 @@ public class GameEngine {
     private final MovementService movementService;
     private final EconomyService economyService;
     private final JailService jailService;
+    private final MarketService marketService;
 
     public GameEngine(Random random,
                       TileActionService tileActionService,
@@ -26,7 +27,7 @@ public class GameEngine {
                       TurnService turnService,
                       MovementService movementService,
                       EconomyService economyService,
-                      JailService jailService) {
+                      JailService jailService, MarketService marketService) {
         this.random = random;
         this.tileActionService = tileActionService;
         this.playerStateService = playerStateService;
@@ -34,6 +35,7 @@ public class GameEngine {
         this.movementService = movementService;
         this.economyService = economyService;
         this.jailService = jailService;
+        this.marketService = marketService;
     }
 
     /**
@@ -188,7 +190,21 @@ public class GameEngine {
      * Ukonci tah hraca.
      */
     private void completeAction(Game game, Player player) {
+        boolean turnEnded = shouldUpdateMarketAfterAction(game, player);
         turnService.finishTurn(game, player);
+
+        if (turnEnded && !game.isFinished()) {
+            marketService.updateCompanyPrices(game);
+        }
+    }
+
+    /**
+     * Skontroluje ci sa tah hraca dostane do bodu kedy sa ma trh aktualizovat.
+     */
+    private boolean shouldUpdateMarketAfterAction(Game game, Player player) {
+        return !game.isWaitingForAction()
+                && !game.isFinished()
+                && turnService.shouldEndTurn(game, player);
     }
 
     /**
