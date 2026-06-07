@@ -37,23 +37,22 @@ public class GameBuilder {
      * Vytvori hru (Game).
      * Na vstupnych parametroch zavisi ci bude hra nova hra alebo existujuca - nacitana z DB.
      */
-    public Game buildGame(List<Player> players, Deck randomDeck, Deck financeDeck) {
+    public Game buildGame(List<Player> players, Deck cardDeck) {
         Companies companies = new Companies();
         Tile startTile = new StartTile(START_POSITION, "START");
-        List<Tile> tiles = createTiles(randomDeck, financeDeck, startTile, companies);
+        List<Tile> tiles = createTiles(cardDeck, startTile, companies);
 
         Board board = new Board(tiles, startTile);
 
-        return new Game(config, players, board, START_POSITION, randomDeck, financeDeck, companies);
+        return new Game(config, players, board, START_POSITION, cardDeck, companies);
     }
 
     /**
      * Vytvori prazdnu hru bez hracov.
      */
     public Game createEmptyGame() {
-        Deck randomDeck = createCardsWithRandomEvents();
-        Deck financeDeck = createCardsWithFinancialTransactions();
-        return buildGame(new ArrayList<>(), randomDeck, financeDeck);
+        Deck cardDeck = createCardsWithRandomEvents();
+        return buildGame(new ArrayList<>(), cardDeck);
     }
 
     /**
@@ -73,17 +72,19 @@ public class GameBuilder {
             return createEmptyGame();
         }
 
-        Deck randomDeck = restoreOrCreateRandomDeck(snapshot.getRandomDeck());
-        Deck financeDeck = restoreOrCreateFinanceDeck(snapshot.getFinanceDeck());
+        Deck cardDeck = restoreOrCreateCardDeck(snapshot.getCardDeck());
+        List<Player> players = createPlayers(snapshot.getPlayers());
 
-        return buildGame(createPlayers(snapshot.getPlayers()), randomDeck, financeDeck);
+        return buildGame(players, cardDeck);
     }
 
     /**
-     * Vytvori balicek kariet (karty s posunom pozicii hraca).
+     * Vytvori balicek kariet s nahodnymi udalostami.
      */
     private Deck createCardsWithRandomEvents() {
         List<Card> randomEventCards = List.of(
+                new MoneyCard(50, "Vyhral si v loterii 50"),
+                new MoneyCard(-50, "Zaplat pokutu 50"),
                 new MoveStepsCard(3, "Posun sa o 3 policka dopredu", true),
                 new MoveToPositionCard(START_POSITION, "Posun sa na START", true),
                 new GoToJailCard(JAIL_POSITION, "Presun sa do vazania", false),
@@ -98,34 +99,12 @@ public class GameBuilder {
     }
 
     /**
-     * Vytvori balicek kariet (karty s transakciami na ucte).
+     * Obnovi balicek kariet s nahodnymi udalosti,
+     * alebo vytvori novy ak snapshot este deck neobsahuje.
      */
-    private Deck createCardsWithFinancialTransactions() {
-        List<Card> financialTransactionCards = List.of(
-                new MoneyCard(50, "Vyhral si v loterii 50"),
-                new MoneyCard(-50, "Zaplat pokutu 50")
-        );
-
-        return new Deck(financialTransactionCards);
-    }
-
-    /**
-     * Obnovi balicek nahodnych udalosti, alebo vytvori novy ak snapshot este deck neobsahuje.
-     */
-    private Deck restoreOrCreateRandomDeck(DeckSnapshot snapshot) {
+    private Deck restoreOrCreateCardDeck(DeckSnapshot snapshot) {
         if (snapshot == null || snapshot.getCards() == null) {
             return createCardsWithRandomEvents();
-        }
-
-        return restoreDeck(snapshot);
-    }
-
-    /**
-     * Obnovi financny balicek, alebo vytvori novy ak snapshot este deck neobsahuje.
-     */
-    private Deck restoreOrCreateFinanceDeck(DeckSnapshot snapshot) {
-        if (snapshot == null || snapshot.getCards() == null) {
-            return createCardsWithFinancialTransactions();
         }
 
         return restoreDeck(snapshot);
@@ -149,7 +128,11 @@ public class GameBuilder {
      */
     private Card restoreCard(CardSnapshot snapshot) {
         return switch (snapshot.getKind()) {
-            case MONEY -> new MoneyCard(snapshot.getId(), snapshot.getAmount(), snapshot.getDescription());
+            case MONEY -> new MoneyCard(
+                    snapshot.getId(),
+                    snapshot.getAmount(),
+                    snapshot.getDescription()
+            );
             case MOVE_STEPS -> new MoveStepsCard(
                     snapshot.getId(),
                     snapshot.getSteps(),
@@ -200,38 +183,37 @@ public class GameBuilder {
     /**
      * Vytvori policka na hracej doske.
      */
-    private List<Tile> createTiles(Deck randomEventsDeck, Deck financialTransactionsDeck,
-                                   Tile startTile, Companies companies) {
+    private List<Tile> createTiles(Deck cardDeck, Tile startTile, Companies companies) {
         List<Tile> tiles = new ArrayList<>();
         tiles.add(startTile);
 
-        PropertyGroup firma1 = new PropertyGroup("Firma 1", generateRandomGroupPrice(100));
+        PropertyGroup firma1 = new PropertyGroup("Firma 1", generateRandomGroupPrice(500));
         addPropertyGroup(tiles, firma1, 1, "policko_1");
         addPropertyGroup(tiles, firma1, 2, "policko_2");
         addPropertyGroup(tiles, firma1, 3, "policko_3");
         companies.addGroup(firma1);
 
-        tiles.add(new WorkshopTile(4, "dielna_4", 100));
+        tiles.add(new WorkshopTile(4, "dielna_4", 500));
 
-        tiles.add(new CardTile(5, "nahoda_5", randomEventsDeck));
+        tiles.add(new CardTile(5, "karty_5", cardDeck));
 
-        PropertyGroup firma2 = new PropertyGroup("Firma 2", generateRandomGroupPrice(100));
+        PropertyGroup firma2 = new PropertyGroup("Firma 2", generateRandomGroupPrice(500));
         addPropertyGroup(tiles, firma2, 6, "policko_6");
         addPropertyGroup(tiles, firma2, 7, "policko_7");
         addPropertyGroup(tiles, firma2, 8, "policko_8");
         companies.addGroup(firma2);
 
-        tiles.add(new CardTile(9, "finance_9", financialTransactionsDeck));
+        tiles.add(new CardTile(9, "karty_9", cardDeck));
 
-        PropertyGroup firma3 = new PropertyGroup("Firma 3", generateRandomGroupPrice(100));
+        PropertyGroup firma3 = new PropertyGroup("Firma 3", generateRandomGroupPrice(500));
         addPropertyGroup(tiles, firma3, 10, "policko_10");
         addPropertyGroup(tiles, firma3, 11, "policko_11");
         companies.addGroup(firma3);
 
-        tiles.add(new ServerTile(12, "Serverovna_12", 150, config.getRentForOnePropertyMultiplier()));
+        tiles.add(new ServerTile(12, "Serverovna_12", 750, config.getRentForOnePropertyMultiplier()));
         tiles.add(new JailTile(13, "Vazanie_13"));
 
-        tiles.add(new CardTile(14, "nahoda_14", randomEventsDeck));
+        tiles.add(new CardTile(14, "karty_14", cardDeck));
 
         return tiles;
     }

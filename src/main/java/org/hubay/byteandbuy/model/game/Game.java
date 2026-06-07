@@ -27,8 +27,6 @@ public class Game {
     private final Board board;
     @JsonIgnore
     private final Deck randomDeck;
-    @JsonIgnore
-    private final Deck financeDeck;
     @Setter
     private int currentPlayerIndex;
     private int lastDice;
@@ -38,12 +36,11 @@ public class Game {
     private final Companies companies;
 
     public Game(GameConfig gameConfig, List<Player> players, Board board,
-                int currentPlayerIndex, Deck randomDeck, Deck financeDeck, Companies companies) {
+                int currentPlayerIndex, Deck randomDeck, Companies companies) {
         this.gameConfig = gameConfig;
         this.players = players;
         this.board = board;
         this.randomDeck = randomDeck;
-        this.financeDeck = financeDeck;
         this.currentPlayerIndex = currentPlayerIndex;
         this.companies = companies;
         this.state = GameState.WAITING_FOR_PLAYERS;

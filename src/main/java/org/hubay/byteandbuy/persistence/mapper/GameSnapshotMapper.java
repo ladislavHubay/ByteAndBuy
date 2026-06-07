@@ -40,8 +40,7 @@ public class GameSnapshotMapper {
                 players,
                 tileOwnerships,
                 companyPrices,
-                game.getRandomDeck().toSnapshot(),
-                game.getFinanceDeck().toSnapshot()
+                game.getRandomDeck().toSnapshot()
         );
     }
 

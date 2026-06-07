@@ -11,31 +11,31 @@ import org.springframework.context.annotation.Configuration;
 public class GameConfiguration {
     @Value("${game.startBonus}")
     private int startBonus;
-    @Value("${game.startMoney}")
+    @Value("${gameBuilder.startMoney}")
     private int startMoney;
     @Value("${game.minPlayersToStart}")
     private int minPlayersToStart;
-    @Value("${game.fullGroupRentMultiplier}")
+    @Value("${gameBuilder.fullGroupRentMultiplier}")
     private double fullGroupRentMultiplier;
-    @Value("${game.workshopDiscount}")
+    @Value("${economyService.workshopDiscount}")
     private double workshopDiscount;
-    @Value("${game.market.initialPriceMinMultiplier}")
+    @Value("${gameBuilder.initialPriceMinMultiplier}")
     private double initialPriceMinMultiplier;
-    @Value("${game.market.initialPriceMaxMultiplier}")
+    @Value("${gameBuilder.initialPriceMaxMultiplier}")
     private double initialPriceMaxMultiplier;
-    @Value("${game.market.minPriceMultiplier}")
-    private double priceMinMultiplier;
-    @Value("${game.market.maxPriceMultiplier}")
-    private double priceMaxMultiplier;
-    @Value("${game.property.baseRentRate}")
+    @Value("${market.marketService.minPriceMultiplier}")
+    private double minPriceMultiplier;
+    @Value("${market.marketService.maxPriceMultiplier}")
+    private double maxPriceMultiplier;
+    @Value("${gameBuilder.baseRentRate}")
     private double baseRentRate;
-    @Value("${game.property.rentForOnePropertyMultiplier}")
+    @Value("${gameBuilder.rentForOnePropertyMultiplier}")
     private double rentForOnePropertyMultiplier;
 
     @Bean
     public GameConfig gameConfig() {
         return new GameConfig(startBonus, startMoney, minPlayersToStart, fullGroupRentMultiplier,
                 workshopDiscount, initialPriceMinMultiplier, initialPriceMaxMultiplier,
-                priceMinMultiplier, priceMaxMultiplier, baseRentRate, rentForOnePropertyMultiplier);
+                minPriceMultiplier, maxPriceMultiplier, baseRentRate, rentForOnePropertyMultiplier);
     }
 }
